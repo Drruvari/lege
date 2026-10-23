@@ -12,6 +12,9 @@ Write Tailwind classes in the form the language server accepts. Do not introduce
 - Spacing on the default scale uses the scale: `h-112` for 28rem, `py-0.75` for 3px.
 - CSS variables in utilities use parentheses: `bg-(--token)`, including a fallback such as `bg-(--mac-accent,oklch(0.53_0.2_258))`.
 - A descendant slot is `**:data-[slot=name]:absolute`, not `[&_[data-slot=name]]:absolute`.
+- A parent that contains a slot is `has-data-[slot=name]:flex-row`, not `has-[[data-slot=name]]:flex-row`.
+- A parent that contains a focused descendant is `group-has-focus-visible/name:opacity-100`, not `group-has-[:focus-visible]/name:opacity-100`.
+- 52px of height is `h-13`, not `h-[52px]`.
 - Wrapping is `wrap-break-word`, not `break-words`.
 
 Icons come from the current names only:

@@ -36,7 +36,7 @@ function MacWindow({ active = true, onClose, onMinimize, onZoom, className, styl
         data-slot="mac-window"
         data-state={active ? "active" : "inactive"}
         className={cn(
-          "group/mac-window relative isolate flex min-w-0 flex-col overflow-hidden rounded-[14px] bg-card text-card-foreground has-[[data-slot=mac-window-sidebar]]:flex-row has-[[data-slot=mac-window-sidebar]]:bg-transparent",
+          "group/mac-window relative isolate flex min-w-0 flex-col overflow-hidden rounded-[14px] bg-card text-card-foreground has-data-[slot=mac-window-sidebar]:flex-row has-data-[slot=mac-window-sidebar]:bg-transparent",
           "shadow-[0_0_0_0.5px_rgb(0_0_0/0.22),0_24px_60px_-12px_rgb(0_0_0/0.35),0_8px_20px_-8px_rgb(0_0_0/0.2)]",
           "dark:shadow-[0_0_0_0.5px_rgb(0_0_0/0.9),inset_0_0_0_0.5px_rgb(255_255_255/0.16),0_24px_60px_-12px_rgb(0_0_0/0.7)]",
           "data-[state=inactive]:shadow-[0_0_0_0.5px_rgb(0_0_0/0.18),0_12px_30px_-12px_rgb(0_0_0/0.25)]",
@@ -76,7 +76,7 @@ function TrafficLight({ kind, label, onPress }: { kind: keyof typeof glyphs; lab
       aria-hidden="true"
       stroke="currentColor"
       fill="none"
-      className="size-3 opacity-0 transition-opacity duration-100 group-hover/lights:opacity-100 group-has-[:focus-visible]/lights:opacity-100"
+      className="size-3 opacity-0 transition-opacity duration-100 group-hover/lights:opacity-100 group-has-focus-visible/lights:opacity-100"
     >
       {glyphs[kind]}
     </svg>
@@ -140,7 +140,7 @@ function MacWindowTitleBar({ title, controls = true, leading, className, childre
       data-slot="mac-window-titlebar"
       className={cn(
         "relative flex shrink-0 items-center gap-2 border-b border-foreground/8 px-3 select-none",
-        hasToolbar ? "h-[52px] px-3 sm:px-4" : "h-8",
+        hasToolbar ? "h-13 px-3 sm:px-4" : "h-8",
         className
       )}
       {...props}
@@ -205,7 +205,7 @@ function MacWindowSidebar({ controls = true, className, children, ...props }: Ma
       {...props}
     >
       {controls ? (
-        <div className="flex h-[52px] shrink-0 items-center px-4">
+        <div className="flex h-13 shrink-0 items-center px-4">
           <MacWindowControls />
         </div>
       ) : null}
