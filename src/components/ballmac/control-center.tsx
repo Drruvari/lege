@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Pause, Play, SkipBack, SkipForward } from "lucide-react"
+import { PauseIcon, PlayIcon, SkipBackIcon, SkipForwardIcon } from "lucide-react"
 import { Slider as SliderPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
@@ -44,7 +44,7 @@ function ControlCenter({ label, className, ...props }: ControlCenterProps) {
   )
 }
 
-const tile = "rounded-[18px] bg-foreground/[0.07] dark:bg-white/[0.09]"
+const tile = "rounded-[18px] bg-foreground/7 dark:bg-white/9"
 
 type ControlTileProps = Omit<React.ComponentProps<"button">, "onChange"> & {
   /** Icon in the round badge. */
@@ -77,7 +77,7 @@ function ControlTile({ icon, label, status, pressed, defaultPressed = false, onP
       }}
       className={cn(
         tile,
-        "group flex min-h-[4.25rem] items-center gap-2.5 p-2.5 text-start outline-none transition-[background-color,transform] duration-150 hover:bg-foreground/[0.11] focus-visible:ring-[3px] focus-visible:ring-ring/60 active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100",
+        "group flex min-h-[4.25rem] items-center gap-2.5 p-2.5 text-start outline-none transition-[background-color,transform] duration-150 hover:bg-foreground/11 focus-visible:ring-[3px] focus-visible:ring-ring/60 active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100",
         stacked && "flex-col items-start justify-between",
         className
       )}
@@ -117,7 +117,7 @@ function ControlRow({ icon, label, status, pressed, defaultPressed = false, onPr
         if (!e.defaultPrevented) toggle()
       }}
       className={cn(
-        "group flex items-center gap-2.5 rounded-xl p-1 text-start outline-none transition-colors hover:bg-foreground/[0.06] focus-visible:ring-[3px] focus-visible:ring-ring/60 motion-reduce:transition-none",
+        "group flex items-center gap-2.5 rounded-xl p-1 text-start outline-none transition-colors hover:bg-foreground/6 focus-visible:ring-[3px] focus-visible:ring-ring/60 motion-reduce:transition-none",
         className
       )}
       {...props}
@@ -217,13 +217,13 @@ function ControlNowPlaying({ title, artist, artwork, playing, defaultPlaying = f
         <p className="truncate text-xs text-muted-foreground">{artist}</p>
         <div className="-ms-2 mt-1 flex items-center">
           <button type="button" aria-label={msg("control-center.previousTrack", "Previous track")} onClick={onPrevious} className={btn}>
-            <SkipBack aria-hidden="true" />
+            <SkipBackIcon aria-hidden="true" />
           </button>
           <button type="button" aria-label={on ? msg("control-center.pause", "Pause") : msg("control-center.play", "Play")} onClick={toggle} className={btn}>
-            {on ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
+            {on ? <PauseIcon aria-hidden="true" /> : <PlayIcon aria-hidden="true" />}
           </button>
           <button type="button" aria-label={msg("control-center.nextTrack", "Next track")} onClick={onNext} className={btn}>
-            <SkipForward aria-hidden="true" />
+            <SkipForwardIcon aria-hidden="true" />
           </button>
         </div>
       </div>

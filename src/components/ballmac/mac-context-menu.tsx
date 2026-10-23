@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Check, ChevronRight } from "lucide-react"
+import { CheckIcon, ChevronRightIcon } from "lucide-react"
 import { ContextMenu as Primitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
@@ -51,7 +51,7 @@ function MacContextMenuCheckboxItem({ className, children, shortcut, ...props }:
   return (
     <Primitive.CheckboxItem data-slot="mac-context-menu-checkbox-item" className={cn(item, className)} {...props}>
       <Primitive.ItemIndicator className="absolute start-1.5 flex items-center">
-        <Check aria-hidden="true" strokeWidth={3} />
+        <CheckIcon aria-hidden="true" strokeWidth={3} />
       </Primitive.ItemIndicator>
       <span className="flex-1 truncate">{children}</span>
       {shortcut && <MacContextMenuShortcut>{shortcut}</MacContextMenuShortcut>}
@@ -67,7 +67,7 @@ function MacContextMenuRadioItem({ className, children, ...props }: React.Compon
   return (
     <Primitive.RadioItem data-slot="mac-context-menu-radio-item" className={cn(item, className)} {...props}>
       <Primitive.ItemIndicator className="absolute start-1.5 flex items-center">
-        <Check aria-hidden="true" strokeWidth={3} />
+        <CheckIcon aria-hidden="true" strokeWidth={3} />
       </Primitive.ItemIndicator>
       <span className="flex-1 truncate">{children}</span>
     </Primitive.RadioItem>
@@ -95,7 +95,7 @@ function MacContextMenuSubTrigger({ className, children, icon, ...props }: React
     <Primitive.SubTrigger data-slot="mac-context-menu-sub-trigger" className={cn(item, icon && "ps-[30px]", "data-[state=open]:bg-foreground/10", className)} {...props}>
       {icon && <span aria-hidden="true" className="absolute start-2 flex items-center">{icon}</span>}
       <span className="flex-1 truncate">{children}</span>
-      <ChevronRight aria-hidden="true" className="ms-4 -me-1 rtl:rotate-180" strokeWidth={2.5} />
+      <ChevronRightIcon aria-hidden="true" className="ms-4 -me-1 rtl:rotate-180" strokeWidth={2.5} />
     </Primitive.SubTrigger>
   )
 }

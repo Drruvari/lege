@@ -20,7 +20,7 @@ function MenuBar({ className, children, style, ...props }: MenuBarProps) {
       style={style}
       className={cn(
         "flex h-7 w-full min-w-0 items-center px-2 text-[13px] text-foreground select-none",
-        "border-b border-white/20 bg-background/55 shadow-[0_0.5px_0_0_rgb(0_0_0/0.08)] backdrop-blur-2xl backdrop-saturate-150 dark:border-white/[0.06] dark:bg-background/45",
+        "border-b border-white/20 bg-background/55 shadow-[0_0.5px_0_0_rgb(0_0_0/0.08)] backdrop-blur-2xl backdrop-saturate-150 dark:border-white/6 dark:bg-background/45",
         className
       )}
     >
@@ -55,7 +55,7 @@ function MenuBarTrigger({ variant = "default", className, ...props }: MenuBarTri
       data-slot="menu-bar-trigger"
       className={cn(
         "flex h-[22px] shrink-0 items-center gap-1.5 rounded-[5px] px-2 outline-none transition-colors duration-75",
-        "hover:bg-foreground/[0.08] focus-visible:bg-foreground/[0.1] data-[state=open]:bg-foreground/[0.12] [&_svg]:size-3.5 [&_svg]:shrink-0",
+        "hover:bg-foreground/8 focus-visible:bg-foreground/10 data-[state=open]:bg-foreground/12 [&_svg]:size-3.5 [&_svg]:shrink-0",
         variant === "app" ? "font-bold" : "font-normal",
         className
       )}
@@ -193,7 +193,7 @@ function MenuBarStatusItem({ className, type = "button", ...props }: MenuBarStat
       type={type}
       data-slot="menu-bar-status-item"
       className={cn(
-        "flex h-[22px] min-w-[26px] shrink-0 items-center justify-center gap-1 rounded-[5px] px-1.5 outline-none transition-colors duration-75 hover:bg-foreground/[0.08] focus-visible:ring-2 focus-visible:ring-ring/60 [&_svg]:size-[15px] [&_svg]:shrink-0",
+        "flex h-[22px] min-w-[26px] shrink-0 items-center justify-center gap-1 rounded-[5px] px-1.5 outline-none transition-colors duration-75 hover:bg-foreground/8 focus-visible:ring-2 focus-visible:ring-ring/60 [&_svg]:size-[15px] [&_svg]:shrink-0",
         className
       )}
       {...props}

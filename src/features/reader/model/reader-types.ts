@@ -1,6 +1,9 @@
 /** Shared domain types for the library and reading workspace. */
+import type { MarkColor } from "./mark-colors";
+
 export type BookFormat = "epub" | "pdf";
 export type ReaderTheme = "paper" | "sepia" | "night";
+export type { MarkColor };
 
 export interface BookMeta {
   id: string;
@@ -46,6 +49,8 @@ export interface Annotation {
   note: string;
   createdAt: number;
   rects?: HighlightRect[];
+  /** Highlighter or bookmark ink. Missing marks keep the original brass. */
+  color?: MarkColor;
 }
 
 export type ReaderTypeface = "literata" | "charter" | "figtree";
@@ -59,6 +64,8 @@ export interface ReaderPreferences {
   pdfZoom: number;
   sourceLang: string;
   targetLang: string;
+  highlightColor: MarkColor;
+  bookmarkColor: MarkColor;
 }
 
 export interface TocEntry {
@@ -95,9 +102,14 @@ export const DEFAULT_PREFS: ReaderPreferences = {
   pdfZoom: 100,
   sourceLang: "en",
   targetLang: "sq",
+  highlightColor: "brass",
+  bookmarkColor: "rose",
 };
 
 export const PLACEHOLDER_AUTHOR = "Unknown author";
 
 /** Fired on window when the reader taps the page itself, not a control. */
 export const PAGE_TAP_EVENT = "lege:page-tap";
+
+/** Fired when a pointer lands on the page, so a floating selection bar can close. */
+export const DISMISS_SELECTION_EVENT = "lege:dismiss-selection";

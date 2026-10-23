@@ -7,22 +7,24 @@ import {
   type RefObject,
 } from "react";
 import {
-  ArrowRight,
-  BookmarkSimple,
-  BookOpen,
-  CaretLeft,
-  CaretRight,
-  CircleNotch,
-  DownloadSimple,
-  Highlighter,
-  ListBullets,
-  MagnifyingGlass,
-  NotePencil,
-  Plus,
-  Trash,
-  X,
+  ArrowRightIcon,
+  BookmarkSimpleIcon,
+  BookOpenIcon,
+  CaretLeftIcon,
+  CaretRightIcon,
+  CircleNotchIcon,
+  CopyIcon,
+  DownloadSimpleIcon,
+  HighlighterIcon,
+  ListBulletsIcon,
+  MagnifyingGlassIcon,
+  NotePencilIcon,
+  PlusIcon,
+  TrashIcon,
+  XIcon,
 } from "@phosphor-icons/react";
 import { cn } from "cn";
+import { markFill } from "../model/mark-colors";
 
 import {
   DynamicIsland,
@@ -259,9 +261,18 @@ export function ReaderView(props: ReaderViewProps) {
       >
         <MacWindowTitleBar
           className={cn(
-            "[&_[data-slot=mac-window-title]]:absolute [&_[data-slot=mac-window-title]]:left-1/2 [&_[data-slot=mac-window-title]]:-translate-x-1/2",
+            "**:data-[slot=mac-window-title]:absolute **:data-[slot=mac-window-title]:left-1/2 **:data-[slot=mac-window-title]:-translate-x-1/2",
             chromeClass,
           )}
+          leading={
+            <IconButton
+              label="Contents"
+              active={contentsOpen}
+              onClick={() => onContentsOpenChange(!contentsOpen)}
+            >
+              <ListBulletsIcon />
+            </IconButton>
+          }
           title={
             <DynamicIsland
               view={props.translationBusy ? "translating" : "reading"}
@@ -272,7 +283,7 @@ export function ReaderView(props: ReaderViewProps) {
                 label={`Reading ${book.title}, ${progress}% complete`}
                 className="h-9 w-[clamp(8rem,28vw,18rem)] gap-2 px-3 text-xs"
               >
-                <BookOpen weight="fill" className="shrink-0" />
+                <BookOpenIcon weight="fill" className="shrink-0" />
                 <span className="min-w-0 flex-1 truncate">{book.title}</span>
                 <span className="tabular-nums text-white/65">{progress}%</span>
               </DynamicIslandView>
@@ -281,26 +292,26 @@ export function ReaderView(props: ReaderViewProps) {
                 label="Translating selected text"
                 className="h-9 gap-2 px-4 text-xs"
               >
-                <CircleNotch className="animate-spin" />
+                <CircleNotchIcon className="animate-spin" />
                 <span>Translating…</span>
               </DynamicIslandView>
             </DynamicIsland>
           }
         >
           <IconButton
-            label="Contents"
-            active={contentsOpen}
-            onClick={() => onContentsOpenChange(!contentsOpen)}
-          >
-            <ListBullets />
-          </IconButton>
-          <IconButton
             label={props.bookmarked ? "Remove bookmark" : "Bookmark this page"}
             shortcut="B"
             active={props.bookmarked}
             onClick={props.onToggleBookmark}
           >
-            <BookmarkSimple />
+            <BookmarkSimpleIcon
+              weight={props.bookmarked ? "fill" : "regular"}
+              style={
+                props.bookmarked
+                  ? { color: markFill(props.preferences.bookmarkColor, "rose") }
+                  : undefined
+              }
+            />
           </IconButton>
           <ReadingControls
             format={book.format}
@@ -314,7 +325,7 @@ export function ReaderView(props: ReaderViewProps) {
             active={notesOpen}
             onClick={() => onNotesOpenChange(!notesOpen)}
           >
-            <NotePencil />
+            <NotePencilIcon />
           </IconButton>
         </MacWindowTitleBar>
 
@@ -470,7 +481,7 @@ function PageTurn({
       )}
     >
       <span className="hidden size-10 items-center justify-center rounded-full text-muted-foreground opacity-0 transition group-hover/turn:bg-foreground/5 group-hover/turn:opacity-100 group-focus-visible/turn:opacity-100 group-focus-visible/turn:ring-2 group-focus-visible/turn:ring-ring sm:flex">
-        {next ? <CaretRight /> : <CaretLeft />}
+        {next ? <CaretRightIcon /> : <CaretLeftIcon />}
       </span>
     </button>
   );
@@ -576,7 +587,7 @@ function PanelHeader({
   children?: ReactNode;
 }) {
   return (
-    <div className="flex h-14 shrink-0 items-center justify-between gap-2 px-4">
+    <div className="flex h-12 shrink-0 items-center justify-between gap-2 border-b border-foreground/8 px-4">
       <div className="flex items-center gap-2">
         <h2 className="text-sm font-semibold">{title}</h2>
         <span className="text-xs text-muted-foreground tabular-nums">
@@ -648,12 +659,12 @@ function ContentsPanel({
       <PanelHeader title="Contents" count={total}>
         {onClose && (
           <IconButton label="Close contents" size="icon-sm" onClick={onClose}>
-            <X />
+            <XIcon />
           </IconButton>
         )}
       </PanelHeader>
       {chapters.length > 0 && pages.length > 0 && (
-        <div className="px-3 pb-2">
+        <div className="px-4 pt-3 pb-1">
           <SegmentedControl
             value={mode}
             onValueChange={(value) => {
@@ -669,10 +680,10 @@ function ContentsPanel({
         </div>
       )}
       {total > 8 && (
-        <div className="px-3 pb-2">
+        <div className="px-4 pt-2 pb-2">
           <InputGroup className="h-9">
             <InputGroupAddon>
-              <MagnifyingGlass />
+              <MagnifyingGlassIcon />
             </InputGroupAddon>
             <InputGroupInput
               aria-label={mode === "pages" ? "Find a page" : "Find a chapter"}
@@ -685,7 +696,7 @@ function ContentsPanel({
         </div>
       )}
       <ScrollArea className="min-h-0 flex-1">
-        <div ref={listRef} className="px-2 pb-4">
+        <div ref={listRef} className="px-3 py-2">
           {mode === "chapters" ? (
             <nav className="flex flex-col gap-0.5">
               {visibleChapters.map((entry) => {
@@ -701,7 +712,7 @@ function ContentsPanel({
                     style={{
                       paddingLeft: `${0.75 + Math.min(entry.depth, 2) * 0.875}rem`,
                     }}
-                    className="h-auto justify-between gap-3 py-1.5 text-left text-[0.8125rem] leading-snug font-normal whitespace-normal text-muted-foreground [content-visibility:auto] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground aria-[current=location]:bg-primary/10 aria-[current=location]:font-medium aria-[current=location]:text-primary"
+                    className="h-auto justify-between gap-3 py-2 text-left text-[0.8125rem] leading-snug font-normal whitespace-normal text-muted-foreground [content-visibility:auto] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground aria-[current=location]:bg-primary/10 aria-[current=location]:font-medium aria-[current=location]:text-primary"
                   >
                     <span className="min-w-0">{entry.label}</span>
                     {pages.length > 0 && (
@@ -769,16 +780,26 @@ function AnnotationContextMenu({
         {children}
       </MacContextMenuTrigger>
       <MacContextMenuContent>
-        <MacContextMenuItem icon={<ArrowRight />} onSelect={onJump}>
+        <MacContextMenuItem icon={<ArrowRightIcon />} onSelect={onJump}>
           Go to {bookmark ? "bookmark" : "passage"}
         </MacContextMenuItem>
         {onEdit && (
-          <MacContextMenuItem icon={<NotePencil />} onSelect={onEdit}>
+          <MacContextMenuItem icon={<NotePencilIcon />} onSelect={onEdit}>
             {item.note ? "Edit note" : "Add note"}
           </MacContextMenuItem>
         )}
+        {(item.quote || item.note) && (
+          <MacContextMenuItem
+            icon={<CopyIcon />}
+            onSelect={() => {
+              void navigator.clipboard.writeText(item.quote || item.note);
+            }}
+          >
+            Copy passage
+          </MacContextMenuItem>
+        )}
         <MacContextMenuSeparator />
-        <MacContextMenuItem destructive icon={<Trash />} onSelect={onDelete}>
+        <MacContextMenuItem destructive icon={<TrashIcon />} onSelect={onDelete}>
           Delete {bookmark ? "bookmark" : "annotation"}
         </MacContextMenuItem>
       </MacContextMenuContent>
@@ -791,6 +812,7 @@ function NotesPanel({
   notes,
   highlights,
   bookmarks,
+  preferences,
   tab,
   onTabChange,
   onJump,
@@ -807,8 +829,8 @@ function NotesPanel({
       onValueChange={(value) => onTabChange(value as NotesTab)}
       className="flex min-h-0 flex-1 flex-col gap-0"
     >
-      <div className="shrink-0 border-b border-foreground/8 px-3 py-2">
-        <div className="mb-2 flex h-7 items-center justify-between gap-2">
+      <div className="shrink-0 border-b border-foreground/8 px-4 pt-3 pb-3">
+        <div className="mb-3 flex h-8 items-center justify-between gap-2">
           <h2 className="text-sm font-semibold">Annotations</h2>
           <div className="flex items-center">
             <IconButton
@@ -817,10 +839,10 @@ function NotesPanel({
               onClick={onExport}
               disabled={notes.length + highlights.length + bookmarks.length === 0}
             >
-              <DownloadSimple />
+              <DownloadSimpleIcon />
             </IconButton>
             <IconButton label="New note" size="icon-sm" onClick={onNewNote}>
-              <Plus />
+              <PlusIcon />
             </IconButton>
             {onClose && (
               <IconButton
@@ -828,7 +850,7 @@ function NotesPanel({
                 size="icon-sm"
                 onClick={onClose}
               >
-                <X />
+                <XIcon />
               </IconButton>
             )}
           </div>
@@ -863,10 +885,10 @@ function NotesPanel({
 
       <TabsContent value="notes" className="min-h-0 animate-none">
         <ScrollArea className="h-full">
-          <div className="flex flex-col gap-3 px-3 pb-4">
+          <div className="flex flex-col px-4 py-1">
             {notes.length === 0 ? (
               <PanelEmpty
-                icon={<Highlighter />}
+                icon={<HighlighterIcon />}
                 title="No notes yet"
                 description="Select text in the book to highlight it or add a note."
                 action={
@@ -885,17 +907,24 @@ function NotesPanel({
                   onDelete={() => onDelete(item.id)}
                 >
                 <article
-                  className="group/note border-t border-foreground/10 py-4 text-sm first:border-t-0"
+                  className="group/note border-t border-foreground/10 px-1 py-3 text-sm first:border-t-0"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <Badge
-                      variant={
-                        item.kind === "highlight" ? "brass" : "secondary"
-                      }
-                      className="h-5 px-2 text-[0.7rem]"
-                    >
-                      {item.kind === "highlight" ? "Highlight" : "Note"}
-                    </Badge>
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span
+                        aria-hidden
+                        className="size-2 shrink-0 rounded-full"
+                        style={{ background: markFill(item.color, "brass") }}
+                      />
+                      <Badge
+                        variant={
+                          item.kind === "highlight" ? "brass" : "secondary"
+                        }
+                        className="h-5 px-2 text-[0.7rem]"
+                      >
+                        {item.kind === "highlight" ? "Highlight" : "Note"}
+                      </Badge>
+                    </div>
                     <span className="text-xs text-muted-foreground">
                       {when(item.createdAt)}
                     </span>
@@ -914,20 +943,31 @@ function NotesPanel({
                       {item.note}
                     </p>
                   )}
-                  <div className="mt-2 -mb-1 flex items-center justify-end gap-0.5 opacity-100 transition-opacity lg:opacity-0 lg:group-hover/note:opacity-100 lg:group-focus-within/note:opacity-100">
+                  <div className="mt-2 -mb-1 flex flex-wrap items-center justify-end gap-0.5">
                     <Button
                       variant="ghost"
                       size="xs"
                       onClick={() => onJump(item.location)}
                     >
-                      Go to passage <ArrowRight data-icon="inline-end" />
+                      Go to passage <ArrowRightIcon data-icon="inline-end" />
                     </Button>
+                    {(item.quote || item.note) && (
+                      <IconButton
+                        label="Copy passage"
+                        size="icon-xs"
+                        onClick={() =>
+                          void navigator.clipboard.writeText(item.quote || item.note)
+                        }
+                      >
+                        <CopyIcon />
+                      </IconButton>
+                    )}
                     <IconButton
                       label={item.note ? "Edit note" : "Add a note"}
                       size="icon-xs"
                       onClick={() => onEditNote(item)}
                     >
-                      <NotePencil />
+                      <NotePencilIcon />
                     </IconButton>
                     <IconButton
                       label="Delete"
@@ -935,7 +975,7 @@ function NotesPanel({
                       className="hover:text-destructive"
                       onClick={() => onDelete(item.id)}
                     >
-                      <Trash />
+                      <TrashIcon />
                     </IconButton>
                   </div>
                 </article>
@@ -948,10 +988,10 @@ function NotesPanel({
 
       <TabsContent value="highlights" className="min-h-0 animate-none">
         <ScrollArea className="h-full">
-          <div className="flex flex-col gap-3 px-3 pb-4">
+          <div className="flex flex-col px-4 py-1">
             {highlights.length === 0 ? (
               <PanelEmpty
-                icon={<Highlighter />}
+                icon={<HighlighterIcon />}
                 title="No highlights yet"
                 description="Select text in the book to save an important passage."
                 action={
@@ -969,14 +1009,21 @@ function NotesPanel({
                   onEdit={() => onEditNote(item)}
                   onDelete={() => onDelete(item.id)}
                 >
-                  <article className="group/note border-t border-foreground/10 py-4 text-sm first:border-t-0">
+                  <article className="group/note border-t border-foreground/10 px-1 py-3 text-sm first:border-t-0">
                     <div className="flex items-center justify-between gap-2">
-                      <Badge
-                        variant="brass"
-                        className="h-5 px-2 text-[0.7rem]"
-                      >
-                        Highlight
-                      </Badge>
+                      <div className="flex min-w-0 items-center gap-2">
+                        <span
+                          aria-hidden
+                          className="size-2 shrink-0 rounded-full"
+                          style={{ background: markFill(item.color, "brass") }}
+                        />
+                        <Badge
+                          variant="brass"
+                          className="h-5 px-2 text-[0.7rem]"
+                        >
+                          Highlight
+                        </Badge>
+                      </div>
                       <span className="text-xs text-muted-foreground">
                         {when(item.createdAt)}
                       </span>
@@ -995,20 +1042,33 @@ function NotesPanel({
                         {item.note}
                       </p>
                     )}
-                    <div className="mt-2 -mb-1 flex items-center justify-end gap-0.5 opacity-100 transition-opacity lg:opacity-0 lg:group-hover/note:opacity-100 lg:group-focus-within/note:opacity-100">
+                    <div className="mt-2 -mb-1 flex flex-wrap items-center justify-end gap-0.5">
                       <Button
                         variant="ghost"
                         size="xs"
                         onClick={() => onJump(item.location)}
                       >
-                        Go to passage <ArrowRight data-icon="inline-end" />
+                        Go to passage <ArrowRightIcon data-icon="inline-end" />
                       </Button>
+                      {(item.quote || item.note) && (
+                        <IconButton
+                          label="Copy passage"
+                          size="icon-xs"
+                          onClick={() =>
+                            void navigator.clipboard.writeText(
+                              item.quote || item.note,
+                            )
+                          }
+                        >
+                          <CopyIcon />
+                        </IconButton>
+                      )}
                       <IconButton
                         label={item.note ? "Edit note" : "Add a note"}
                         size="icon-xs"
                         onClick={() => onEditNote(item)}
                       >
-                        <NotePencil />
+                        <NotePencilIcon />
                       </IconButton>
                       <IconButton
                         label="Delete"
@@ -1016,7 +1076,7 @@ function NotesPanel({
                         className="hover:text-destructive"
                         onClick={() => onDelete(item.id)}
                       >
-                        <Trash />
+                        <TrashIcon />
                       </IconButton>
                     </div>
                   </article>
@@ -1029,10 +1089,10 @@ function NotesPanel({
 
       <TabsContent value="bookmarks" className="min-h-0 animate-none">
         <ScrollArea className="h-full">
-          <div className="flex flex-col gap-2 px-3 pb-4">
+          <div className="flex flex-col px-4 py-1">
             {bookmarks.length === 0 ? (
               <PanelEmpty
-                icon={<BookmarkSimple />}
+                icon={<BookmarkSimpleIcon />}
                 title="No bookmarks yet"
                 description="Bookmark a page to come back to it later. Press B anytime."
                 action={
@@ -1054,12 +1114,13 @@ function NotesPanel({
                   onJump={() => onJump(item.location)}
                   onDelete={() => onDelete(item.id)}
                 >
-                <div
-                  className="flex items-center gap-1 border-t border-foreground/10 py-2 pl-1 first:border-t-0"
-                >
-                  <BookmarkSimple
+                <div className="flex items-center gap-2 border-t border-foreground/10 px-1 py-2.5 first:border-t-0">
+                  <BookmarkSimpleIcon
                     weight="fill"
-                    className="size-4 shrink-0 text-primary"
+                    className="size-4 shrink-0"
+                    style={{
+                      color: markFill(item.color, preferences.bookmarkColor),
+                    }}
                   />
                   <button
                     type="button"
@@ -1080,7 +1141,7 @@ function NotesPanel({
                     size="icon-sm"
                     onClick={() => onDelete(item.id)}
                   >
-                    <X />
+                    <XIcon />
                   </IconButton>
                 </div>
                 </AnnotationContextMenu>

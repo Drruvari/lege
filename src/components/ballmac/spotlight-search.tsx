@@ -85,7 +85,7 @@ function SpotlightSearchList({ className, ...props }: SpotlightSearchListProps) 
     <CommandPrimitive.List
       data-slot="spotlight-search-list"
       className={cn(
-        "max-h-[min(24rem,60dvh)] scroll-py-2 overflow-x-hidden overflow-y-auto overscroll-contain border-t border-foreground/[0.08] p-2 empty:hidden",
+        "max-h-[min(24rem,60dvh)] scroll-py-2 overflow-x-hidden overflow-y-auto overscroll-contain border-t border-foreground/8 p-2 empty:hidden",
         className
       )}
       {...props}
@@ -121,7 +121,7 @@ function SpotlightSearchGroup({ ref, className, ...props }: React.ComponentProps
 }
 
 function SpotlightSearchSeparator({ className, ...props }: React.ComponentProps<typeof CommandPrimitive.Separator>) {
-  return <CommandPrimitive.Separator data-slot="spotlight-search-separator" className={cn("mx-2.5 my-1.5 h-px bg-foreground/[0.08]", className)} {...props} />
+  return <CommandPrimitive.Separator data-slot="spotlight-search-separator" className={cn("mx-2.5 my-1.5 h-px bg-foreground/8", className)} {...props} />
 }
 
 type SpotlightSearchItemProps = React.ComponentProps<typeof CommandPrimitive.Item> & {
@@ -154,7 +154,7 @@ function SpotlightSearchItem({ ref, icon, iconClassName, detail, value, classNam
         <span
           data-slot="spotlight-search-item-icon"
           className={cn(
-            "flex size-7 shrink-0 items-center justify-center rounded-[7px] bg-foreground/[0.07] text-foreground/75 shadow-[inset_0_0_0_0.5px_rgb(255_255_255/0.2)] [&_svg:not([class*='size-'])]:size-4",
+            "flex size-7 shrink-0 items-center justify-center rounded-[7px] bg-foreground/7 text-foreground/75 shadow-[inset_0_0_0_0.5px_rgb(255_255_255/0.2)] [&_svg:not([class*='size-'])]:size-4",
             !iconClassName && "group-data-[selected=true]/spotlight-item:bg-white/20 group-data-[selected=true]/spotlight-item:text-white",
             iconClassName
           )}
@@ -179,7 +179,7 @@ function SpotlightSearchFooter({ className, ...props }: SpotlightSearchFooterPro
   return (
     <div
       data-slot="spotlight-search-footer"
-      className={cn("flex h-9 shrink-0 items-center gap-3 border-t border-foreground/[0.08] px-4 text-xs text-foreground/50", className)}
+      className={cn("flex h-9 shrink-0 items-center gap-3 border-t border-foreground/8 px-4 text-xs text-foreground/50", className)}
       {...props}
     />
   )

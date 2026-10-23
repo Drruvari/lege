@@ -1,5 +1,5 @@
 import * as React from "react"
-import { ChevronLeft, ChevronRight, LayoutGrid, List } from "lucide-react"
+import { ChevronLeftIcon, ChevronRightIcon, LayoutGridIcon, ListIcon } from "lucide-react"
 
 import { DriveIcon, FileIcon, FolderIcon, type IconTone } from "@/components/ballmac/mac-icons"
 import {
@@ -73,6 +73,8 @@ type FinderWindowProps = Omit<React.ComponentProps<"div">, "onSelect"> & {
   onOpenFile?: (file: FinderNode) => void
   /** Called whenever the selection changes. */
   onSelectionChange?: (ids: string[]) => void
+  /** Wrap a row, for example with a context menu. The node is the file or folder. */
+  wrapItem?: (node: FinderNode, item: React.ReactNode) => React.ReactNode
 }
 
 function Icon({ node, size }: { node: FinderNode; size: number }) {
@@ -82,7 +84,7 @@ function Icon({ node, size }: { node: FinderNode; size: number }) {
 }
 
 /** A working mini Finder: sidebar, back and forward, icon and list views, selection, keyboard navigation and a path bar. */
-function FinderWindow({ root, sidebar, defaultFolder, view: viewProp = "icons", onOpenFile, onSelectionChange, className, ...props }: FinderWindowProps) {
+function FinderWindow({ root, sidebar, defaultFolder, view: viewProp = "icons", onOpenFile, onSelectionChange, wrapItem, className, ...props }: FinderWindowProps) {
   const msg = useMessages()
   const uid = React.useId()
   const [history, setHistory] = React.useState<{ stack: string[][]; index: number }>(() => {
@@ -195,7 +197,7 @@ function FinderWindow({ root, sidebar, defaultFolder, view: viewProp = "icons", 
   const status = `${items.length} ${items.length === 1 ? "item" : "items"}${selected.length ? `, ${selected.length} selected` : ""}`
 
   return (
-    <MacWindow className={cn("h-[28rem] w-full", className)} {...props}>
+    <MacWindow className={cn("h-112 w-full", className)} {...props}>
       <MacWindowSidebar className="max-sm:hidden">
         {sidebar?.map((section) => (
           <div key={section.title} className="px-2.5 pb-3">
@@ -214,22 +216,22 @@ function FinderWindow({ root, sidebar, defaultFolder, view: viewProp = "icons", 
           <span className="me-auto flex min-w-0 items-center gap-1">
             <MacWindowControls className="me-2 pointer-events-auto sm:hidden" />
             <MacWindowToolbarButton aria-label={msg("finder-window.back", "Back")} disabled={!canBack} onClick={goBack}>
-              <ChevronLeft  className="rtl:rotate-180"/>
+              <ChevronLeftIcon className="rtl:rotate-180" />
             </MacWindowToolbarButton>
             <MacWindowToolbarButton aria-label={msg("finder-window.forward", "Forward")} disabled={!canForward} onClick={goForward}>
-              <ChevronRight  className="rtl:rotate-180"/>
+              <ChevronRightIcon className="rtl:rotate-180" />
             </MacWindowToolbarButton>
             <span className="ms-2 truncate text-[15px] font-semibold text-foreground">{folder.name}</span>
           </span>
-          <span className="inline-flex items-center gap-px rounded-lg bg-foreground/[0.06] p-0.5" role="group" aria-label={msg("finder-window.view", "View")}>
-            {([["icons", LayoutGrid, msg("finder-window.asIcons", "as Icons")], ["list", List, msg("finder-window.asList", "as List")]] as const).map(([v, Glyph, label]) => (
+          <span className="inline-flex items-center gap-px rounded-lg bg-foreground/6 p-0.5" role="group" aria-label={msg("finder-window.view", "View")}>
+            {([["icons", LayoutGridIcon, msg("finder-window.asIcons", "as Icons")], ["list", ListIcon, msg("finder-window.asList", "as List")]] as const).map(([v, Glyph, label]) => (
               <button
                 key={v}
                 type="button"
                 aria-label={label}
                 aria-pressed={view === v}
                 onClick={() => setView(v)}
-                className="inline-flex h-6 w-8 items-center justify-center rounded-md text-foreground/70 outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-pressed:bg-background aria-pressed:text-foreground aria-pressed:shadow-[0_0.5px_1.5px_rgb(0_0_0/0.25)] dark:aria-pressed:bg-foreground/[0.18]"
+                className="inline-flex h-6 w-8 items-center justify-center rounded-md text-foreground/70 outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-pressed:bg-background aria-pressed:text-foreground aria-pressed:shadow-[0_0.5px_1.5px_rgb(0_0_0/0.25)] dark:aria-pressed:bg-foreground/18"
               >
                 <Glyph aria-hidden="true" className="size-4" />
               </button>
@@ -241,13 +243,13 @@ function FinderWindow({ root, sidebar, defaultFolder, view: viewProp = "icons", 
             placeholder={msg("finder-window.search", "Search")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="ms-1.5 h-7 w-24 rounded-md transition-[width] duration-200 focus-visible:w-36 sm:w-36 motion-reduce:transition-none border border-foreground/10 bg-foreground/[0.05] px-2.5 text-[13px] text-foreground outline-none placeholder:text-muted-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50"
+            className="ms-1.5 h-7 w-24 rounded-md transition-[width] duration-200 focus-visible:w-36 sm:w-36 motion-reduce:transition-none border border-foreground/10 bg-foreground/5 px-2.5 text-[13px] text-foreground outline-none placeholder:text-muted-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50"
           />
         </MacWindowTitleBar>
 
         <MacWindowContent className="relative" onClick={(e) => e.target === e.currentTarget && select([])}>
           {view === "list" && (
-            <div aria-hidden="true" className="sticky top-0 z-10 grid grid-cols-[minmax(0,1fr)_7.5rem_5rem] gap-3 border-b border-foreground/[0.08] bg-card/90 px-4 py-1 text-[11px] font-medium text-muted-foreground backdrop-blur @container">
+            <div aria-hidden="true" className="sticky top-0 z-10 grid grid-cols-[minmax(0,1fr)_7.5rem_5rem] gap-3 border-b border-foreground/8 bg-card/90 px-4 py-1 text-[11px] font-medium text-muted-foreground backdrop-blur @container">
               <span>{msg("finder-window.name", "Name")}</span>
               <span>{msg("finder-window.dateModified", "Date Modified")}</span>
               <span className="text-end">{msg("finder-window.size", "Size")}</span>
@@ -265,9 +267,8 @@ function FinderWindow({ root, sidebar, defaultFolder, view: viewProp = "icons", 
           >
             {items.map((node, i) => {
               const isSel = selected.includes(node.id)
-              return (
+              const item = (
                 <div
-                  key={node.id}
                   id={optionId(i)}
                   role="option"
                   aria-selected={isSel}
@@ -278,17 +279,17 @@ function FinderWindow({ root, sidebar, defaultFolder, view: viewProp = "icons", 
                     "cursor-default select-none",
                     view === "icons"
                       ? "flex flex-col items-center gap-1 rounded-lg p-1.5 text-center"
-                      : cn("grid grid-cols-[minmax(0,1fr)_7.5rem_5rem] items-center gap-3 rounded-md px-2 py-[3px] text-[13px]", i % 2 === 1 && !isSel && "bg-foreground/[0.03]"),
-                    isSel && view === "list" && "bg-[var(--mac-accent,oklch(0.53_0.2_258))] text-white",
+                      : cn("grid grid-cols-[minmax(0,1fr)_7.5rem_5rem] items-center gap-3 rounded-md px-2 py-0.75 text-[13px]", i % 2 === 1 && !isSel && "bg-foreground/3"),
+                    isSel && view === "list" && "bg-(--mac-accent,oklch(0.53_0.2_258)) text-white",
                     active === i && "outline-2 -outline-offset-2 outline-transparent [[role=listbox]:focus-visible_&]:outline-ring/60"
                   )}
                 >
                   {view === "icons" ? (
                     <>
-                      <span className={cn("rounded-lg p-1", isSel && "bg-foreground/[0.1]")}>
+                      <span className={cn("rounded-lg p-1", isSel && "bg-foreground/10")}>
                         <Icon node={node} size={56} />
                       </span>
-                      <span className={cn("line-clamp-2 max-w-full rounded-[5px] px-1.5 text-[12px] leading-4 break-words", isSel && "bg-[var(--mac-accent,oklch(0.53_0.2_258))] text-white")} aria-hidden="true">
+                      <span className={cn("line-clamp-2 max-w-full rounded-[5px] px-1.5 text-[12px] leading-4 wrap-break-word", isSel && "bg-(--mac-accent,oklch(0.53_0.2_258)) text-white")} aria-hidden="true">
                         {node.name}
                       </span>
                     </>
@@ -304,16 +305,21 @@ function FinderWindow({ root, sidebar, defaultFolder, view: viewProp = "icons", 
                   )}
                 </div>
               )
+              return (
+                <React.Fragment key={node.id}>
+                  {wrapItem ? wrapItem(node, item) : item}
+                </React.Fragment>
+              )
             })}
             {items.length === 0 && <p className="col-span-full px-4 py-10 text-center text-[13px] text-muted-foreground">{query ? `No items match “${query}”.` : "This folder is empty."}</p>}
           </div>
         </MacWindowContent>
 
-        <nav aria-label={msg("finder-window.path", "Path")} className="flex h-7 shrink-0 items-center gap-1 border-t border-foreground/[0.08] bg-foreground/[0.02] px-3 text-[11px] text-muted-foreground">
+        <nav aria-label={msg("finder-window.path", "Path")} className="flex h-7 shrink-0 items-center gap-1 border-t border-foreground/8 bg-foreground/2 px-3 text-[11px] text-muted-foreground">
           <ol className="flex min-w-0 items-center gap-0.5">
             {trail.map((n, i) => (
               <li key={n.id} className="flex min-w-0 items-center gap-0.5">
-                {i > 0 && <ChevronRight aria-hidden="true" className="size-3 shrink-0 opacity-60 rtl:rotate-180" />}
+                {i > 0 && <ChevronRightIcon aria-hidden="true" className="size-3 shrink-0 opacity-60 rtl:rotate-180" />}
                 <button
                   type="button"
                   aria-current={i === trail.length - 1 ? "location" : undefined}

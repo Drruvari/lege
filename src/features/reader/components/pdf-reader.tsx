@@ -1,6 +1,7 @@
 import {
   forwardRef,
   type ComponentProps,
+  type CSSProperties,
   useCallback,
   useEffect,
   useImperativeHandle,
@@ -9,10 +10,11 @@ import {
   useState,
 } from "react";
 import { Document, Page } from "react-pdf";
-import { CaretLeft, CaretRight } from "@phosphor-icons/react";
+import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { markFill, markWash, type MarkColor } from "../model/mark-colors";
 import type {
   Annotation,
   CapturedSelection,
@@ -74,10 +76,10 @@ interface Props {
   initialLocation: string;
   preferences: ReaderPreferences;
   annotations: Annotation[];
-  selection: CapturedSelection | null;
   onProgress(location: string, progress: number, totalPages?: number): void;
   onToc(items: TocEntry[]): void;
   onSelection(selection: CapturedSelection): void;
+  onOpenMark?(id: string, x: number, y: number): void;
   onDismissSelection(): void;
 }
 
@@ -87,10 +89,10 @@ export const PdfReader = forwardRef<ReaderHandle, Props>(function PdfReader(
     initialLocation,
     preferences,
     annotations,
-    selection,
     onProgress,
     onToc,
     onSelection,
+    onOpenMark,
     onDismissSelection,
   },
   ref,
@@ -114,6 +116,7 @@ export const PdfReader = forwardRef<ReaderHandle, Props>(function PdfReader(
   const annotationsRef = useRef(annotations);
   const progressRef = useRef(onProgress);
   const onSelectionRef = useRef(onSelection);
+  const markRef = useRef(onOpenMark);
   const dismissRef = useRef(onDismissSelection);
 
   useEffect(() => {
@@ -122,8 +125,9 @@ export const PdfReader = forwardRef<ReaderHandle, Props>(function PdfReader(
     annotationsRef.current = annotations;
     progressRef.current = onProgress;
     onSelectionRef.current = onSelection;
+    markRef.current = onOpenMark;
     dismissRef.current = onDismissSelection;
-  }, [annotations, count, onDismissSelection, onProgress, onSelection, page]);
+  }, [annotations, count, onDismissSelection, onOpenMark, onProgress, onSelection, page]);
 
   // Read the bytes once. A blob URL is revoked by React StrictMode's setup
   // cleanup before PDF.js can fetch it, which looks like a damaged file.
@@ -205,11 +209,12 @@ export const PdfReader = forwardRef<ReaderHandle, Props>(function PdfReader(
       const target = event.target;
       if (
         target instanceof Element &&
-        target.closest("button, input, textarea, a, form")
+        target.closest("button, input, textarea, a, form, .pdf-highlight")
       )
         return;
       const next = readSelection(pageShellRef.current, pageRef.current);
       if (next) onSelectionRef.current(next);
+      else dismissRef.current();
     };
     node.addEventListener("pointerup", capture, true);
     return () => node.removeEventListener("pointerup", capture, true);
@@ -220,8 +225,7 @@ export const PdfReader = forwardRef<ReaderHandle, Props>(function PdfReader(
     if (!shell) return;
     const next: Record<string, HighlightRect[]> = {};
     for (const item of annotationsRef.current) {
-      if (item.kind === "bookmark" || item.rects?.length || !item.quote)
-        continue;
+      if (item.kind === "bookmark" || !item.quote) continue;
       if (item.location !== String(pageRef.current)) continue;
       const rects = rectsForQuote(shell, item.quote);
       if (rects.length) next[item.id] = rects;
@@ -248,7 +252,7 @@ export const PdfReader = forwardRef<ReaderHandle, Props>(function PdfReader(
   const pageWidth =
     fit > 0 ? Math.max(240, Math.round((fit * zoom) / 4) * 4) : 0;
 
-  const marks = marksForPage(annotations, recovered, selection, page);
+  const marks = marksForPage(annotations, recovered, page);
 
   const move = (direction: number) =>
     setPage((current) =>
@@ -268,7 +272,7 @@ export const PdfReader = forwardRef<ReaderHandle, Props>(function PdfReader(
     >
       <div
         ref={stageRef}
-        className="flex min-h-0 flex-1 justify-center overflow-auto px-3 pt-4 pb-20 sm:px-5"
+        className="flex min-h-0 flex-1 justify-center overflow-auto px-4 pt-6 pb-16 sm:px-6 sm:pt-8"
       >
         <div className="pdf-page-wrap my-auto flex w-full justify-center">
           {loadError ? (
@@ -327,7 +331,10 @@ export const PdfReader = forwardRef<ReaderHandle, Props>(function PdfReader(
                     renderTextLayer
                     renderAnnotationLayer
                   />
-                  <HighlightLayer rects={marks} />
+                  <HighlightLayer
+                    marks={marks}
+                    onOpen={(id, x, y) => markRef.current?.(id, x, y)}
+                  />
                 </div>
               </Document>
             )
@@ -344,7 +351,7 @@ export const PdfReader = forwardRef<ReaderHandle, Props>(function PdfReader(
             onClick={() => move(-1)}
             disabled={page <= 1}
           >
-            <CaretLeft />
+            <CaretLeftIcon />
           </Button>
           <form
             className="flex items-center gap-1.5 sm:gap-2"
@@ -374,7 +381,7 @@ export const PdfReader = forwardRef<ReaderHandle, Props>(function PdfReader(
             onClick={() => move(1)}
             disabled={page >= count}
           >
-            <CaretRight />
+            <CaretRightIcon />
           </Button>
         </div>
       </div>
@@ -440,42 +447,69 @@ async function outlinePage(pdf: PdfDocument, dest: OutlineNode["dest"]) {
   }
 }
 
-function HighlightLayer({ rects }: { rects: HighlightRect[] }) {
-  if (!rects.length) return null;
+function HighlightLayer({
+  marks,
+  onOpen,
+}: {
+  marks: PageMark[];
+  onOpen(id: string, x: number, y: number): void;
+}) {
+  if (!marks.length) return null;
   return (
-    <div className="pointer-events-none absolute inset-0 z-10" aria-hidden>
-      {rects.map((rect, index) => (
-        <div
-          key={`${rect.x}-${rect.y}-${rect.w}-${index}`}
-          className="pdf-highlight"
-          style={{
-            left: `${rect.x * 100}%`,
-            top: `${rect.y * 100}%`,
-            width: `${rect.w * 100}%`,
-            height: `${rect.h * 100}%`,
-          }}
-        />
-      ))}
+    <div className="pointer-events-none absolute inset-0 z-10">
+      {marks.map((mark) =>
+        mark.rects.map((rect, index) =>
+          mark.id ? (
+            <button
+              key={`${mark.id}-${index}`}
+              type="button"
+              className="pdf-highlight"
+              aria-label="Highlight actions"
+              style={markStyle(rect, mark.color)}
+              onClick={(event) => {
+                event.stopPropagation();
+                onOpen(mark.id!, event.clientX, event.clientY);
+              }}
+              onContextMenu={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onOpen(mark.id!, event.clientX, event.clientY);
+              }}
+            />
+          ) : null,
+        ),
+      )}
     </div>
   );
 }
 
+function markStyle(rect: HighlightRect, color?: MarkColor): CSSProperties {
+  const fill = markFill(color, "brass");
+  return {
+    left: `${rect.x * 100}%`,
+    top: `${rect.y * 100}%`,
+    width: `${rect.w * 100}%`,
+    height: `${rect.h * 100}%`,
+    background: markWash(color, "brass"),
+    boxShadow: `inset 0 -1px 0 color-mix(in srgb, ${fill} 72%, transparent)`,
+  };
+}
+
+type PageMark = { id?: string; rects: HighlightRect[]; color?: MarkColor };
+
 function marksForPage(
   annotations: Annotation[],
   recovered: Record<string, HighlightRect[]>,
-  selection: CapturedSelection | null,
   page: number,
 ) {
   const location = String(page);
-  const saved = annotations.flatMap((item) => {
+  return annotations.flatMap((item) => {
     if (item.kind === "bookmark" || item.location !== location) return [];
-    return item.rects?.length ? item.rects : (recovered[item.id] ?? []);
+    const rects = recovered[item.id]?.length
+      ? recovered[item.id]
+      : (item.rects ?? []);
+    return rects.length ? [{ id: item.id, rects, color: item.color }] : [];
   });
-  const pending =
-    selection?.location === location && selection.rects?.length
-      ? selection.rects
-      : [];
-  return [...saved, ...pending];
 }
 
 function readSelection(

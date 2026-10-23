@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpen, Books, Plus } from "@phosphor-icons/react";
+import { ArrowRightIcon, BookOpenIcon, BooksIcon, PlusIcon } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ballmac/button";
 import { EmptyState } from "@/components/ballmac/empty-state";
@@ -99,14 +99,14 @@ export function HomeView({
           <>
             <ToolbarButton
               aria-label="Open library"
-              icon={<Books weight="fill" />}
+              icon={<BooksIcon weight="fill" />}
               onClick={onViewLibrary}
             >
               <span className="hidden sm:inline">Library</span>
             </ToolbarButton>
             <ToolbarButton
               aria-label="Add books"
-              icon={<Plus />}
+              icon={<PlusIcon />}
               onClick={onAddBook}
             >
               <span className="hidden sm:inline">Add</span>
@@ -116,19 +116,18 @@ export function HomeView({
       </Toolbar>
 
       <div className="min-h-0 flex-1 overflow-y-auto">
-      <div className="mx-auto min-h-full w-full max-w-5xl px-5 py-6 sm:px-8 sm:py-8">
-
-        {current ? (
-          <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
-            <section aria-labelledby="continue-heading">
-              <h2
-                id="continue-heading"
-                className="mb-3 text-sm font-semibold"
-              >
-                Continue reading
-              </h2>
-              <article className="border-y border-foreground/10 py-5 sm:py-6">
-                <div className="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-5 sm:grid-cols-[8.5rem_minmax(0,1fr)] sm:gap-7">
+        <div className="mx-auto flex min-h-full w-full max-w-2xl flex-col gap-10 px-6 py-8 sm:px-8 sm:py-12">
+          {current ? (
+            <>
+              <section aria-labelledby="continue-heading">
+                <h2
+                  id="continue-heading"
+                  className="mb-4 text-sm font-semibold"
+                >
+                  Continue reading
+                </h2>
+                <article className="border-y border-foreground/10 py-6">
+                  <div className="grid grid-cols-[6.5rem_minmax(0,1fr)] items-center gap-5 sm:grid-cols-[8.5rem_minmax(0,1fr)] sm:gap-8">
                   <BookContextMenu
                     book={current}
                     shelves={shelves}
@@ -174,7 +173,7 @@ export function HomeView({
                       />
                       <div className="mt-5 flex flex-wrap items-center gap-2">
                         <Button onClick={() => actions.open(current)}>
-                          <BookOpen weight="fill" aria-hidden="true" />
+                          <BookOpenIcon weight="fill" aria-hidden="true" />
                           {current.progress > 0 ? "Resume" : "Start reading"}
                         </Button>
                         <BookActionsMenu
@@ -194,78 +193,72 @@ export function HomeView({
               </article>
             </section>
 
-            <aside aria-labelledby="recent-heading">
-              <div className="mb-3 flex h-8 items-center justify-between">
-                <h2 id="recent-heading" className="text-sm font-semibold">
-                  Recently opened
-                </h2>
-                <Button variant="ghost" size="sm" onClick={onViewLibrary}>
-                  See all
-                </Button>
-              </div>
-              {recent.length ? (
-                <ItemGroup role="list" className="gap-0 border-y border-foreground/10">
+            {recent.length > 0 && (
+              <section aria-labelledby="recent-heading">
+                <div className="mb-4 flex h-8 items-center justify-between">
+                  <h2 id="recent-heading" className="text-sm font-semibold">
+                    Recently opened
+                  </h2>
+                  <Button variant="ghost" size="sm" onClick={onViewLibrary}>
+                    See all
+                  </Button>
+                </div>
+                <ItemGroup
+                  role="list"
+                  className="gap-0 border-y border-foreground/10"
+                >
                   {recent.map((book, index) => (
                     <div key={book.id} role="listitem">
-                    {index > 0 && <div className="ms-14 h-px bg-border" />}
-                    <BookContextMenu
-                      book={book}
-                      shelves={shelves}
-                      actions={actions}
-                    >
-                      <Item
-                        asChild
-                        size="sm"
-                        className="rounded-none border-0"
+                      {index > 0 && <div className="ms-16 h-px bg-border" />}
+                      <BookContextMenu
+                        book={book}
+                        shelves={shelves}
+                        actions={actions}
                       >
-                        <button
-                          type="button"
-                          onClick={() => actions.open(book)}
+                        <Item
+                          asChild
+                          size="sm"
+                          className="rounded-none border-0 px-1"
                         >
-                          <ItemMedia>
-                            <BookMetaCover book={book} className="w-10" />
-                          </ItemMedia>
-                          <ItemContent>
-                            <ItemTitle className="block w-full truncate">
-                              {book.title}
-                            </ItemTitle>
-                            <ItemDescription className="line-clamp-1 text-xs">
-                              {book.author} · {progressLine(book)}
-                            </ItemDescription>
-                          </ItemContent>
-                          <ItemActions>
-                            <ArrowRight
-                              className="size-4 text-muted-foreground"
-                              aria-hidden="true"
-                            />
-                          </ItemActions>
-                        </button>
-                      </Item>
-                    </BookContextMenu>
+                          <button
+                            type="button"
+                            onClick={() => actions.open(book)}
+                          >
+                            <ItemMedia>
+                              <BookMetaCover book={book} className="w-10" />
+                            </ItemMedia>
+                            <ItemContent>
+                              <ItemTitle className="block w-full truncate">
+                                {book.title}
+                              </ItemTitle>
+                              <ItemDescription className="line-clamp-1 text-xs">
+                                {book.author} · {progressLine(book)}
+                              </ItemDescription>
+                            </ItemContent>
+                            <ItemActions>
+                              <ArrowRightIcon
+                                className="size-4 text-muted-foreground"
+                                aria-hidden="true"
+                              />
+                            </ItemActions>
+                          </button>
+                        </Item>
+                      </BookContextMenu>
                     </div>
                   ))}
                 </ItemGroup>
-              ) : (
-                <Item variant="muted" size="sm">
-                  <ItemContent>
-                    <ItemTitle>No other books yet</ItemTitle>
-                    <ItemDescription>
-                      Add another PDF or EPUB when you are ready.
-                    </ItemDescription>
-                  </ItemContent>
-                </Item>
-              )}
-            </aside>
-          </div>
-        ) : (
+              </section>
+            )}
+            </>
+          ) : (
           <EmptyState
-            className="min-h-[28rem] border-0 bg-transparent"
+            className="min-h-112 border-0 bg-transparent"
             title="Add your first book"
             description="Choose a PDF or EPUB from this device. Your library, progress, and notes stay in this browser."
             icon={<PhosphorNotebookIcon size={26} />}
             action={
               <Button onClick={onAddBook}>
-                <Plus />
+                <PlusIcon />
                 Choose files
               </Button>
             }

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Keyboard, Sun, SunMedium, Volume, Volume1, Volume2, VolumeX } from "lucide-react"
+import { KeyboardIcon, SunIcon, SunMediumIcon, VolumeIcon, Volume1Icon, Volume2Icon, VolumeXIcon } from "lucide-react"
 import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 
 import { cn } from "@/lib/utils"
@@ -28,12 +28,12 @@ type HudProps = Omit<React.ComponentProps<"div">, "children"> & {
 const NAMES: Record<HudKind, string> = { volume: "Volume", brightness: "Brightness", keyboard: "Keyboard brightness" }
 
 function HudIcon({ kind, value, muted }: { kind: HudKind; value: number; muted?: boolean }) {
-  if (kind === "brightness") return value > 50 ? <Sun aria-hidden="true" /> : <SunMedium aria-hidden="true" />
-  if (kind === "keyboard") return <Keyboard aria-hidden="true" />
-  if (muted || value === 0) return <VolumeX aria-hidden="true" />
-  if (value < 34) return <Volume aria-hidden="true" />
-  if (value < 67) return <Volume1 aria-hidden="true" />
-  return <Volume2 aria-hidden="true" />
+  if (kind === "brightness") return value > 50 ? <SunIcon aria-hidden="true" /> : <SunMediumIcon aria-hidden="true" />
+  if (kind === "keyboard") return <KeyboardIcon aria-hidden="true" />
+  if (muted || value === 0) return <VolumeXIcon aria-hidden="true" />
+  if (value < 34) return <VolumeIcon aria-hidden="true" />
+  if (value < 67) return <Volume1Icon aria-hidden="true" />
+  return <Volume2Icon aria-hidden="true" />
 }
 
 /**

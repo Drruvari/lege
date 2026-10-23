@@ -5,7 +5,9 @@ import {
   useRef,
   useState,
   type DragEvent,
+  type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 
 import {
   addBook,
@@ -23,10 +25,12 @@ import {
   saveShelf,
   translateText,
   DEFAULT_PREFS,
+  DISMISS_SELECTION_EVENT,
   PLACEHOLDER_AUTHOR,
   type Annotation,
   type BookMeta,
   type CapturedSelection,
+  type MarkColor,
   type ReaderHandle,
   type ReaderPreferences,
   type Shelf,
@@ -43,7 +47,10 @@ import {
   type NoteDraft,
   type TranslationState,
 } from "@/features/reader/components/reader-dialogs";
-import { SelectionToolbar } from "@/features/reader/components/selection-toolbar";
+import {
+  AnnotationMenu,
+  SelectionToolbar,
+} from "@/features/reader/components/selection-toolbar";
 import {
   BookActionsMenu,
   isFinished,
@@ -125,6 +132,7 @@ export default function App() {
   const [annotations, setAnnotations] = useState<Annotation[]>([]);
   const [libraryAnnotations, setLibraryAnnotations] = useState<Annotation[]>([]);
   const annotationsRef = useRef<Annotation[]>([]);
+  const libraryAnnotationsRef = useRef<Annotation[]>([]);
   const [preferences, setPreferences] =
     useState<ReaderPreferences>(DEFAULT_PREFS);
   const [preferencesLoaded, setPreferencesLoaded] = useState(false);
@@ -135,6 +143,11 @@ export default function App() {
   const [tab, setTab] = useState<NotesTab>("notes");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [selection, setSelection] = useState<CapturedSelection | null>(null);
+  const [markMenu, setMarkMenu] = useState<{
+    id: string;
+    x: number;
+    y: number;
+  } | null>(null);
   const [noteDraft, setNoteDraft] = useState<NoteDraft | null>(null);
   const [translation, setTranslation] = useState<TranslationState | null>(null);
   const [pendingRemoval, setPendingRemoval] = useState<BookMeta | null>(null);
@@ -352,6 +365,44 @@ export default function App() {
   useEffect(() => {
     annotationsRef.current = annotations;
   }, [annotations]);
+
+  useEffect(() => {
+    libraryAnnotationsRef.current = libraryAnnotations;
+  }, [libraryAnnotations]);
+
+  useEffect(() => {
+    if (!selection && !markMenu) return;
+    function close(event: Event) {
+      const target = event.target;
+      if (
+        target instanceof Element &&
+        target.closest(
+          "[data-selection-toolbar], [data-annotation-menu], [role=dialog]",
+        )
+      )
+        return;
+      setSelection(null);
+      setMarkMenu(null);
+    }
+    function onDismiss() {
+      setSelection(null);
+      setMarkMenu(null);
+    }
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setSelection(null);
+        setMarkMenu(null);
+      }
+    }
+    window.addEventListener("pointerdown", close, true);
+    window.addEventListener(DISMISS_SELECTION_EVENT, onDismiss);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("pointerdown", close, true);
+      window.removeEventListener(DISMISS_SELECTION_EVENT, onDismiss);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [selection, markMenu]);
 
   function patchBook(id: string, changes: Partial<BookMeta>) {
     const stored = books.find((book) => book.id === id);
@@ -645,20 +696,40 @@ export default function App() {
     }
   }
 
-  function mutateAnnotations(modify: (previous: Annotation[]) => Annotation[]) {
-    if (!activeId) return;
-    const next = modify(annotationsRef.current);
-    annotationsRef.current = next;
-    setAnnotations(next);
-    void saveAnnotations(activeId, next).catch(() =>
+  function writeAnnotations(bookId: string, next: Annotation[]) {
+    if (bookId === activeId) {
+      annotationsRef.current = next;
+      setAnnotations(next);
+    }
+    const merged = [
+      ...libraryAnnotationsRef.current.filter((item) => item.bookId !== bookId),
+      ...next,
+    ];
+    libraryAnnotationsRef.current = merged;
+    setLibraryAnnotations(merged);
+    void saveAnnotations(bookId, next).catch(() =>
       notify("Could not save your annotation.", "error"),
     );
   }
 
+  function mutateBook(
+    bookId: string,
+    modify: (previous: Annotation[]) => Annotation[],
+  ) {
+    const source =
+      bookId === activeId
+        ? annotationsRef.current
+        : libraryAnnotationsRef.current.filter((item) => item.bookId === bookId);
+    writeAnnotations(bookId, modify(source));
+  }
+
   function removeAnnotation(id: string) {
-    const removed = annotationsRef.current.find((item) => item.id === id);
+    const removed =
+      annotationsRef.current.find((item) => item.id === id) ??
+      libraryAnnotationsRef.current.find((item) => item.id === id);
     if (!removed) return;
-    mutateAnnotations((items) => items.filter((item) => item.id !== id));
+    mutateBook(removed.bookId, (items) => items.filter((item) => item.id !== id));
+    if (markMenu?.id === id) setMarkMenu(null);
     const toastId = toast.add({
       title: removed.kind === "bookmark" ? "Bookmark removed" : "Annotation removed",
       type: "info",
@@ -666,7 +737,7 @@ export default function App() {
       actionProps: {
         children: "Undo",
         onClick: () => {
-          mutateAnnotations((items) =>
+          mutateBook(removed.bookId, (items) =>
             items.some((item) => item.id === removed.id)
               ? items
               : [...items, removed],
@@ -683,8 +754,14 @@ export default function App() {
     location: string,
     note = "",
     rects?: CapturedSelection["rects"],
+    color?: MarkColor,
   ) {
     if (!activeId) return;
+    const ink =
+      color ??
+      (kind === "bookmark"
+        ? preferences.bookmarkColor
+        : preferences.highlightColor);
     const item: Annotation = {
       id: crypto.randomUUID(),
       bookId: activeId,
@@ -693,20 +770,31 @@ export default function App() {
       location,
       note,
       createdAt: Date.now(),
+      color: ink,
       ...(rects?.length ? { rects } : {}),
     };
-    mutateAnnotations((previous) => [...previous, item]);
+    writeAnnotations(activeId, [...annotationsRef.current, item]);
+  }
+
+  function recolorAnnotation(id: string, color: MarkColor) {
+    const item =
+      annotationsRef.current.find((entry) => entry.id === id) ??
+      libraryAnnotationsRef.current.find((entry) => entry.id === id);
+    if (!item) return;
+    mutateBook(item.bookId, (items) =>
+      items.map((entry) => (entry.id === id ? { ...entry, color } : entry)),
+    );
   }
 
   function toggleBookmark() {
     const location = readerRef.current?.getLocation() ?? active?.location;
-    if (!location) return;
+    if (!activeId || !location) return;
     if (
       annotationsRef.current.some(
         (a) => a.kind === "bookmark" && a.location === location,
       )
     ) {
-      mutateAnnotations((previous) =>
+      mutateBook(activeId, (previous) =>
         previous.filter(
           (a) => !(a.kind === "bookmark" && a.location === location),
         ),
@@ -734,14 +822,14 @@ export default function App() {
 
   function saveNote() {
     if (!noteDraft) return;
+    const bookId = noteDraft.bookId ?? activeId;
+    if (!bookId) return;
     const value = noteDraft.value.trim();
     if (!value && !noteDraft.quote) return;
     if (noteDraft.id) {
-      mutateAnnotations((previous) =>
+      mutateBook(bookId, (previous) =>
         previous.map((a) =>
-          a.id === noteDraft.id
-            ? { ...a, note: value, kind: value ? "note" : a.kind }
-            : a,
+          a.id === noteDraft.id ? { ...a, note: value } : a,
         ),
       );
     } else {
@@ -754,8 +842,10 @@ export default function App() {
       );
     }
     setNoteDraft(null);
-    setNotesOpen(true);
-    setTab("notes");
+    if (bookId === activeId) {
+      setNotesOpen(true);
+      setTab("notes");
+    }
     acknowledge("Note saved");
   }
 
@@ -858,12 +948,18 @@ export default function App() {
           initialLocation={active.location}
           preferences={preferences}
           annotations={annotations}
-          selection={selection}
           onProgress={(location, progress, totalPages) =>
             patchBook(active.id, { location, progress, totalPages })
           }
           onToc={setToc}
-          onSelection={setSelection}
+          onSelection={(next) => {
+            setMarkMenu(null);
+            setSelection(next);
+          }}
+          onOpenMark={(id, x, y) => {
+            setSelection(null);
+            setMarkMenu({ id, x, y });
+          }}
           onDismissSelection={() => setSelection(null)}
         />
       ) : (
@@ -877,7 +973,14 @@ export default function App() {
             patchBook(active.id, { location, progress })
           }
           onToc={setToc}
-          onSelection={setSelection}
+          onSelection={(next) => {
+            setMarkMenu(null);
+            setSelection(next);
+          }}
+          onOpenMark={(id, x, y) => {
+            setSelection(null);
+            setMarkMenu({ id, x, y });
+          }}
           onPagesLeft={setPagesLeft}
         />
       )
@@ -891,6 +994,14 @@ export default function App() {
 
   const currentBook =
     [...books].sort((a, b) => b.lastOpenedAt - a.lastOpenedAt)[0] ?? null;
+  const marked = markMenu
+    ? (annotations.find((entry) => entry.id === markMenu.id) ?? null)
+    : null;
+
+  function readerOverlay(node: ReactNode) {
+    const root = readingShellRef.current;
+    return root ? createPortal(node, root) : node;
+  }
 
   return (
     <div
@@ -995,7 +1106,10 @@ export default function App() {
             patchBook(bookId, { location });
             openBook(bookId);
             setNotesOpen(true);
-            setTab("notes");
+            const item = libraryAnnotationsRef.current.find(
+              (entry) => entry.bookId === bookId && entry.location === location,
+            );
+            setTab(item?.kind === "bookmark" ? "bookmarks" : item?.kind === "highlight" ? "highlights" : "notes");
           }}
           onOpenNotes={() => {
             if (!currentBook) return;
@@ -1013,6 +1127,21 @@ export default function App() {
             setNotices((current) => current.filter((notice) => notice.id !== id))
           }
           onClearNotices={() => setNotices([])}
+          bookActions={bookActions}
+          onEditAnnotation={(item) =>
+            setNoteDraft({
+              id: item.id,
+              bookId: item.bookId,
+              quote: item.quote,
+              location: item.location,
+              value: item.note,
+            })
+          }
+          onDeleteAnnotation={removeAnnotation}
+          onCopyAnnotation={(text) => {
+            void navigator.clipboard.writeText(text);
+            acknowledge("Copied to clipboard");
+          }}
         >
           {view === "home" ? (
             <HomeView
@@ -1036,30 +1165,73 @@ export default function App() {
         </DesktopShell>
       )}
 
-      {selection && active && (
-        <SelectionToolbar
-          selection={selection}
-          onHighlight={() => {
-            addAnnotation(
-              "highlight",
-              selection.text,
-              selection.location,
-              "",
-              selection.rects,
-            );
-            setSelection(null);
-            acknowledge("Passage highlighted");
-          }}
-          onNote={() => openNote(selection)}
-          onTranslate={() => void startTranslation(selection.text)}
-          onCopy={() => {
-            void navigator.clipboard.writeText(selection.text);
-            setSelection(null);
-            acknowledge("Copied to clipboard");
-          }}
-          onDismiss={() => setSelection(null)}
-        />
-      )}
+      {selection && active &&
+        readerOverlay(
+          <SelectionToolbar
+            selection={selection}
+            color={preferences.highlightColor}
+            onColor={(highlightColor) => updatePrefs({ highlightColor })}
+            onHighlight={() => {
+              addAnnotation(
+                "highlight",
+                selection.text,
+                selection.location,
+                "",
+                selection.rects,
+                preferences.highlightColor,
+              );
+              setSelection(null);
+              acknowledge("Passage highlighted");
+            }}
+            onNote={() => openNote(selection)}
+            onTranslate={() => void startTranslation(selection.text)}
+            onCopy={() => {
+              void navigator.clipboard.writeText(selection.text);
+              setSelection(null);
+              acknowledge("Copied to clipboard");
+            }}
+            onDismiss={() => setSelection(null)}
+          />,
+        )}
+
+      {marked && markMenu &&
+        readerOverlay(
+          <AnnotationMenu
+            x={markMenu.x}
+            y={markMenu.y}
+            hasNote={Boolean(marked.note)}
+            color={marked.color ?? "brass"}
+            onColor={(color) => recolorAnnotation(marked.id, color)}
+            onNote={() => {
+              setMarkMenu(null);
+              setNoteDraft({
+                id: marked.id,
+                bookId: marked.bookId,
+                quote: marked.quote,
+                location: marked.location,
+                value: marked.note,
+              });
+            }}
+            onCopy={() => {
+              const passage = marked.quote || marked.note;
+              if (!passage) return;
+              void navigator.clipboard.writeText(passage);
+              setMarkMenu(null);
+              acknowledge("Copied to clipboard");
+            }}
+            onTranslate={() => {
+              const passage = marked.quote || marked.note;
+              if (!passage) return;
+              setMarkMenu(null);
+              void startTranslation(passage);
+            }}
+            onDelete={() => {
+              setMarkMenu(null);
+              removeAnnotation(marked.id);
+            }}
+            onDismiss={() => setMarkMenu(null)}
+          />,
+        )}
 
       <SettingsDialog
         open={settingsOpen}

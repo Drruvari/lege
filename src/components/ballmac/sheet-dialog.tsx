@@ -135,7 +135,7 @@ function SheetDialogButton({ primary = false, destructive = false, className, ty
         "inline-flex h-[22px] min-w-[4.25rem] items-center justify-center rounded-[6px] px-3 text-[13px] outline-none transition-[background-color,box-shadow] focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:opacity-50",
         primary
           ? cn("text-white shadow-[0_0.5px_1px_rgb(0_0_0/0.3),inset_0_0.5px_0_rgb(255_255_255/0.3)] hover:brightness-110", destructive ? "bg-destructive" : "bg-(--mac-accent)")
-          : "border border-foreground/10 bg-background/80 shadow-[0_0.5px_1px_rgb(0_0_0/0.15)] hover:bg-background dark:bg-foreground/[0.12] dark:hover:bg-foreground/[0.18]",
+          : "border border-foreground/10 bg-background/80 shadow-[0_0.5px_1px_rgb(0_0_0/0.15)] hover:bg-background dark:bg-foreground/12 dark:hover:bg-foreground/18",
         className
       )}
       {...props}

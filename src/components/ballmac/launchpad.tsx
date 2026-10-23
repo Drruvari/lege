@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { AnimatePresence, motion, useReducedMotion } from "motion/react"
-import { Search } from "lucide-react"
+import { SearchIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { useMessages } from "@/lib/ballmac/i18n"
@@ -143,7 +143,7 @@ function Launchpad({ apps, open, onClose, onLaunch, cellWidth = 120, cellHeight 
           }}
         >
           <div className="relative mt-5 w-56 max-w-[70%] shrink-0">
-            <Search aria-hidden="true" className="pointer-events-none absolute top-1/2 start-2.5 size-3.5 -translate-y-1/2 text-white/70" />
+            <SearchIcon aria-hidden="true" className="pointer-events-none absolute top-1/2 start-2.5 size-3.5 -translate-y-1/2 text-white/70" />
             <input
               ref={searchRef}
               type="search"

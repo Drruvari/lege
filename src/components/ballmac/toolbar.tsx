@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Search, X } from "lucide-react"
+import { SearchIcon, XIcon } from "lucide-react"
 import { Toolbar as Primitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
@@ -25,7 +25,7 @@ function Toolbar({ label, title, subtitle, className, children, ...props }: Tool
     <Primitive.Root
       data-slot="toolbar"
       aria-label={label}
-      className={cn("flex min-h-[var(--bm-toolbar-h,52px)] w-full items-center gap-1.5 border-b border-foreground/[0.08] bg-background/70 px-3 text-foreground backdrop-blur-xl backdrop-saturate-150 [scrollbar-width:none] max-sm:overflow-x-auto [&::-webkit-scrollbar]:hidden", className)}
+      className={cn("flex min-h-[var(--bm-toolbar-h,52px)] w-full items-center gap-1.5 border-b border-foreground/8 bg-background/70 px-3 text-foreground backdrop-blur-xl backdrop-saturate-150 [scrollbar-width:none] max-sm:overflow-x-auto [&::-webkit-scrollbar]:hidden", className)}
       {...props}
     >
       {(title || subtitle) && (
@@ -56,7 +56,7 @@ function ToolbarButton({ icon, labeled = false, pressed, className, children, ..
       aria-pressed={pressed}
       title={props["aria-label"]}
       className={cn(
-        "inline-flex shrink-0 items-center justify-center rounded-md text-foreground/75 outline-none transition-colors duration-100 hover:bg-foreground/[0.07] hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-40 aria-pressed:bg-foreground/[0.1] aria-pressed:text-foreground [&_svg]:size-[18px] [&_svg]:shrink-0",
+        "inline-flex shrink-0 items-center justify-center rounded-md text-foreground/75 outline-none transition-colors duration-100 hover:bg-foreground/7 hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-40 aria-pressed:bg-foreground/10 aria-pressed:text-foreground [&_svg]:size-[18px] [&_svg]:shrink-0",
         labeled ? "min-w-14 flex-col gap-0.5 px-2 py-1 text-[10px]" : "h-8 min-w-8 gap-1.5 px-1.5 text-[13px]",
         className
       )}
@@ -79,7 +79,7 @@ function ToolbarSegmented({ className, ...props }: ToolbarSegmentedProps) {
   return (
     <Primitive.ToggleGroup
       data-slot="toolbar-segmented"
-      className={cn("inline-flex items-center gap-px rounded-lg bg-foreground/[0.06] p-0.5", className)}
+      className={cn("inline-flex items-center gap-px rounded-lg bg-foreground/6 p-0.5", className)}
       {...props}
     />
   )
@@ -90,7 +90,7 @@ function ToolbarSegment({ className, ...props }: React.ComponentProps<typeof Pri
     <Primitive.ToggleItem
       data-slot="toolbar-segment"
       className={cn(
-        "inline-flex h-6 min-w-8 items-center justify-center rounded-md px-1.5 text-foreground/70 outline-none transition-[background-color,color,box-shadow] duration-100 hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-[0_0.5px_1.5px_rgb(0_0_0/0.25)] dark:data-[state=on]:bg-foreground/[0.18] [&_svg]:size-4",
+        "inline-flex h-6 min-w-8 items-center justify-center rounded-md px-1.5 text-foreground/70 outline-none transition-[background-color,color,box-shadow] duration-100 hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-[0_0.5px_1.5px_rgb(0_0_0/0.25)] dark:data-[state=on]:bg-foreground/18 [&_svg]:size-4",
         className
       )}
       {...props}
@@ -127,14 +127,14 @@ function ToolbarSearch({ collapsedWidth = "9rem", expandedWidth = "15rem", class
       className="group/search relative w-(--collapsed) shrink-0 transition-[width] duration-200 ease-out focus-within:w-(--expanded) motion-reduce:transition-none"
       style={{ ["--collapsed" as string]: collapsedWidth, ["--expanded" as string]: expandedWidth }}
     >
-      <Search aria-hidden="true" className="pointer-events-none absolute top-1/2 start-2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+      <SearchIcon aria-hidden="true" className="pointer-events-none absolute top-1/2 start-2 size-3.5 -translate-y-1/2 text-muted-foreground" />
       <input
         type="search"
         value={value}
         aria-label={ariaLabel}
         placeholder={msg("toolbar.search", "Search")}
         className={cn(
-          "h-7 w-full rounded-md border border-foreground/10 bg-foreground/[0.05] pe-7 ps-7 text-[13px] outline-none transition-[box-shadow,background-color] placeholder:text-muted-foreground focus:bg-background focus-visible:ring-[3px] focus-visible:ring-ring/50 [&::-webkit-search-cancel-button]:hidden",
+          "h-7 w-full rounded-md border border-foreground/10 bg-foreground/5 pe-7 ps-7 text-[13px] outline-none transition-[box-shadow,background-color] placeholder:text-muted-foreground focus:bg-background focus-visible:ring-[3px] focus-visible:ring-ring/50 [&::-webkit-search-cancel-button]:hidden",
           className
         )}
         {...props}
@@ -146,7 +146,7 @@ function ToolbarSearch({ collapsedWidth = "9rem", expandedWidth = "15rem", class
           onClick={onClear}
           className="absolute top-1/2 end-1.5 flex size-4 -translate-y-1/2 items-center justify-center rounded-full bg-foreground/30 text-background outline-none hover:bg-foreground/50 focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <X aria-hidden="true" className="size-2.5" strokeWidth={3} />
+          <XIcon aria-hidden="true" className="size-2.5" strokeWidth={3} />
         </button>
       )}
     </div>

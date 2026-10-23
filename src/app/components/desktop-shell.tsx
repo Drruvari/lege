@@ -6,25 +6,28 @@ import {
   type ReactNode,
 } from "react";
 import {
-  Bell,
-  BookOpen,
-  Books,
-  CheckCircle,
-  CircleNotch,
-  DownloadSimple,
-  Folder,
-  GearSix,
-  House,
-  Info,
-  MagnifyingGlass,
-  MoonStars,
-  NotePencil,
-  Plus,
-  Sun,
-  SunHorizon,
-  TextAa,
-  UploadSimple,
-  XCircle,
+  ArrowRightIcon,
+  BellIcon,
+  BookOpenIcon,
+  BooksIcon,
+  CheckCircleIcon,
+  CircleNotchIcon,
+  DownloadSimpleIcon,
+  FolderIcon,
+  GearSixIcon,
+  HouseIcon,
+  InfoIcon,
+  MagnifyingGlassIcon,
+  MoonStarsIcon,
+  CopyIcon,
+  NotePencilIcon,
+  PlusIcon,
+  SunIcon,
+  SunHorizonIcon,
+  TextAaIcon,
+  TrashIcon,
+  UploadSimpleIcon,
+  XCircleIcon,
 } from "@phosphor-icons/react";
 
 import {
@@ -97,6 +100,17 @@ import type {
   ReaderTheme,
   Shelf,
 } from "@/features/reader";
+import {
+  BookContextMenu,
+  type BookActions,
+} from "@/features/library/components/book-actions";
+import {
+  MacContextMenu,
+  MacContextMenuContent,
+  MacContextMenuItem,
+  MacContextMenuSeparator,
+  MacContextMenuTrigger,
+} from "@/components/ballmac/mac-context-menu";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
 export type View = "home" | "library";
@@ -134,6 +148,10 @@ interface DesktopShellProps {
   onPreferencesChange(patch: Partial<ReaderPreferences>): void;
   onDismissNotice(id: string): void;
   onClearNotices(): void;
+  bookActions: BookActions;
+  onEditAnnotation(item: Annotation): void;
+  onDeleteAnnotation(id: string): void;
+  onCopyAnnotation(text: string): void;
 }
 
 type LibraryMode = "browse" | "organize";
@@ -145,9 +163,9 @@ const fromPercent = (value: number, min: number, max: number, step: number) =>
   Math.round((min + (value / 100) * (max - min)) / step) * step;
 
 function NoticeIcon({ type }: { type: AppNoticeType }) {
-  if (type === "success") return <CheckCircle weight="fill" />;
-  if (type === "error") return <XCircle weight="fill" />;
-  return <Info weight="fill" />;
+  if (type === "success") return <CheckCircleIcon weight="fill" />;
+  if (type === "error") return <XCircleIcon weight="fill" />;
+  return <InfoIcon weight="fill" />;
 }
 
 function ReadingControlCenter({
@@ -179,21 +197,21 @@ function ReadingControlCenter({
     <ControlCenter label="Reading controls">
       <ControlCluster aria-label="Reading theme">
         <ControlRow
-          icon={<Sun />}
+          icon={<SunIcon />}
           label="Paper"
           status={preferences.theme === "paper" ? "On" : "Off"}
           pressed={preferences.theme === "paper"}
           onPressedChange={(pressed) => chooseTheme("paper", pressed)}
         />
         <ControlRow
-          icon={<SunHorizon />}
+          icon={<SunHorizonIcon />}
           label="Sepia"
           status={preferences.theme === "sepia" ? "On" : "Off"}
           pressed={preferences.theme === "sepia"}
           onPressedChange={(pressed) => chooseTheme("sepia", pressed)}
         />
         <ControlRow
-          icon={<MoonStars />}
+          icon={<MoonStarsIcon />}
           label="Night"
           status={preferences.theme === "night" ? "On" : "Off"}
           pressed={preferences.theme === "night"}
@@ -203,7 +221,7 @@ function ReadingControlCenter({
 
       <ControlTile
         stacked
-        icon={currentBook ? <BookOpen /> : <Plus />}
+        icon={currentBook ? <BookOpenIcon /> : <PlusIcon />}
         label={currentBook ? "Resume" : "Add book"}
         status={currentBook?.title ?? "PDF or EPUB"}
         pressed={false}
@@ -215,7 +233,7 @@ function ReadingControlCenter({
       />
       <ControlTile
         stacked
-        icon={<GearSix />}
+        icon={<GearSixIcon />}
         label="Preferences"
         status="All controls"
         pressed={false}
@@ -227,7 +245,7 @@ function ReadingControlCenter({
 
       <ControlSlider
         label={`Text size · ${preferences.fontSize}px`}
-        icon={<TextAa />}
+        icon={<TextAaIcon />}
         value={toPercent(preferences.fontSize, 14, 26)}
         onValueChange={(value) => {
           onPreferencesChange({
@@ -238,7 +256,7 @@ function ReadingControlCenter({
       />
       <ControlSlider
         label={`Page width · ${preferences.measure}px`}
-        icon={<BookOpen />}
+        icon={<BookOpenIcon />}
         value={toPercent(preferences.measure, 480, 860)}
         onValueChange={(value) => {
           onPreferencesChange({
@@ -249,7 +267,7 @@ function ReadingControlCenter({
       />
       <ControlSlider
         label={`Line spacing · ${preferences.lineHeight.toFixed(1)}`}
-        icon={<TextAa />}
+        icon={<TextAaIcon />}
         value={toPercent(preferences.lineHeight, 1.4, 2)}
         onValueChange={(value) => {
           onPreferencesChange({
@@ -334,18 +352,18 @@ function makeFinderData(books: BookMeta[], shelves: Shelf[]) {
     {
       title: "Favorites",
       items: [
-        { id: all.id, label: all.name, icon: <Books weight="fill" /> },
+        { id: all.id, label: all.name, icon: <BooksIcon weight="fill" /> },
         {
           id: reading.id,
           label: reading.name,
-          icon: <BookOpen weight="fill" />,
+          icon: <BookOpenIcon weight="fill" />,
         },
         {
           id: finished.id,
           label: finished.name,
-          icon: <CheckCircle weight="fill" />,
+          icon: <CheckCircleIcon weight="fill" />,
         },
-        { id: unsorted.id, label: unsorted.name, icon: <Folder /> },
+        { id: unsorted.id, label: unsorted.name, icon: <FolderIcon /> },
       ],
     },
     ...(shelfFolders.length
@@ -355,7 +373,7 @@ function makeFinderData(books: BookMeta[], shelves: Shelf[]) {
             items: shelfFolders.map((item) => ({
               id: item.id,
               label: item.name,
-              icon: <Folder />,
+              icon: <FolderIcon />,
             })),
           },
         ]
@@ -388,6 +406,10 @@ export function DesktopShell({
   onPreferencesChange,
   onDismissNotice,
   onClearNotices,
+  bookActions,
+  onEditAnnotation,
+  onDeleteAnnotation,
+  onCopyAnnotation,
 }: DesktopShellProps) {
   const [controlsOpen, setControlsOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -438,7 +460,7 @@ export function DesktopShell({
               col: 0,
               row: 1,
               tone: "purple" as const,
-              glyph: <BookOpen weight="fill" />,
+              glyph: <BookOpenIcon weight="fill" />,
             },
           ]
         : []),
@@ -453,7 +475,7 @@ export function DesktopShell({
         name: "Reading Desk",
         icon: (
           <AppIcon size={64} tone="blue">
-            <House weight="fill" />
+            <HouseIcon weight="fill" />
           </AppIcon>
         ),
       },
@@ -462,7 +484,7 @@ export function DesktopShell({
         name: "Library",
         icon: (
           <AppIcon size={64} tone="purple">
-            <Books weight="fill" />
+            <BooksIcon weight="fill" />
           </AppIcon>
         ),
       },
@@ -471,7 +493,7 @@ export function DesktopShell({
         name: "Reader",
         icon: (
           <AppIcon size={64} tone="amber">
-            <BookOpen weight="fill" />
+            <BookOpenIcon weight="fill" />
           </AppIcon>
         ),
       },
@@ -480,7 +502,7 @@ export function DesktopShell({
         name: "Notes",
         icon: (
           <AppIcon size={64} tone="orange">
-            <NotePencil weight="fill" />
+            <NotePencilIcon weight="fill" />
           </AppIcon>
         ),
       },
@@ -489,7 +511,7 @@ export function DesktopShell({
         name: "Search",
         icon: (
           <AppIcon size={64} tone="graphite">
-            <MagnifyingGlass weight="bold" />
+            <MagnifyingGlassIcon weight="bold" />
           </AppIcon>
         ),
       },
@@ -498,7 +520,7 @@ export function DesktopShell({
         name: "Settings",
         icon: (
           <AppIcon size={64} tone="graphite">
-            <GearSix weight="fill" />
+            <GearSixIcon weight="fill" />
           </AppIcon>
         ),
       },
@@ -655,7 +677,7 @@ export function DesktopShell({
                   <ToolbarSpacer />
                   <ToolbarButton
                     aria-label="Open current book notes"
-                    icon={<BookOpen />}
+                    icon={<BookOpenIcon />}
                     disabled={!currentBook}
                     onClick={onOpenNotes}
                   >
@@ -667,31 +689,102 @@ export function DesktopShell({
                     <ul className="divide-y divide-foreground/10">
                       {visibleDesktopAnnotations.map((item) => {
                         const book = books.find((entry) => entry.id === item.bookId);
+                        const passage = item.quote || item.note;
                         return (
                           <li key={item.id}>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                onOpenAnnotation(item.bookId, item.location)
-                              }
-                              className="w-full px-2 py-3 text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-                            >
-                              <span className="block truncate text-sm font-medium">
-                                {item.note ||
-                                  item.quote ||
-                                  (book?.format === "pdf"
-                                    ? `Bookmark on page ${item.location}`
-                                    : "Saved bookmark")}
-                              </span>
-                              {item.quote && item.note && (
-                                <span className="mt-1 line-clamp-2 block font-reading text-sm italic text-foreground/70">
-                                  “{item.quote}”
-                                </span>
-                              )}
-                              <span className="mt-1 block truncate text-xs text-muted-foreground">
-                                {book?.title ?? "Book"}
-                              </span>
-                            </button>
+                            <MacContextMenu>
+                              <MacContextMenuTrigger className="block">
+                                <div className="flex items-start gap-2 px-2 py-3">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      onOpenAnnotation(item.bookId, item.location)
+                                    }
+                                    className="min-w-0 flex-1 text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                                  >
+                                    <span className="block truncate text-sm font-medium">
+                                      {item.note ||
+                                        item.quote ||
+                                        (book?.format === "pdf"
+                                          ? `Bookmark on page ${item.location}`
+                                          : "Saved bookmark")}
+                                    </span>
+                                    {item.quote && item.note && (
+                                      <span className="mt-1 line-clamp-2 block font-reading text-sm italic text-foreground/70">
+                                        “{item.quote}”
+                                      </span>
+                                    )}
+                                    <span className="mt-1 block truncate text-xs text-muted-foreground">
+                                      {book?.title ?? "Book"}
+                                    </span>
+                                  </button>
+                                  <div className="flex shrink-0 items-center">
+                                    {passage && (
+                                      <button
+                                        type="button"
+                                        aria-label="Copy passage"
+                                        onClick={() => onCopyAnnotation(passage)}
+                                        className="rounded-md p-1.5 text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
+                                      >
+                                        <CopyIcon />
+                                      </button>
+                                    )}
+                                    {item.kind !== "bookmark" && (
+                                      <button
+                                        type="button"
+                                        aria-label={item.note ? "Edit note" : "Add note"}
+                                        onClick={() => onEditAnnotation(item)}
+                                        className="rounded-md p-1.5 text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
+                                      >
+                                        <NotePencilIcon />
+                                      </button>
+                                    )}
+                                    <button
+                                      type="button"
+                                      aria-label="Delete"
+                                      onClick={() => onDeleteAnnotation(item.id)}
+                                      className="rounded-md p-1.5 text-muted-foreground hover:bg-foreground/5 hover:text-destructive"
+                                    >
+                                      <TrashIcon />
+                                    </button>
+                                  </div>
+                                </div>
+                              </MacContextMenuTrigger>
+                              <MacContextMenuContent>
+                                <MacContextMenuItem
+                                  icon={<ArrowRightIcon />}
+                                  onSelect={() =>
+                                    onOpenAnnotation(item.bookId, item.location)
+                                  }
+                                >
+                                  Open in book
+                                </MacContextMenuItem>
+                                {passage && (
+                                  <MacContextMenuItem
+                                    icon={<CopyIcon />}
+                                    onSelect={() => onCopyAnnotation(passage)}
+                                  >
+                                    Copy passage
+                                  </MacContextMenuItem>
+                                )}
+                                {item.kind !== "bookmark" && (
+                                  <MacContextMenuItem
+                                    icon={<NotePencilIcon />}
+                                    onSelect={() => onEditAnnotation(item)}
+                                  >
+                                    {item.note ? "Edit note" : "Add note"}
+                                  </MacContextMenuItem>
+                                )}
+                                <MacContextMenuSeparator />
+                                <MacContextMenuItem
+                                  destructive
+                                  icon={<TrashIcon />}
+                                  onSelect={() => onDeleteAnnotation(item.id)}
+                                >
+                                  Delete
+                                </MacContextMenuItem>
+                              </MacContextMenuContent>
+                            </MacContextMenu>
                           </li>
                         );
                       })}
@@ -702,7 +795,7 @@ export function DesktopShell({
                         No {desktopNotesMode} yet
                       </p>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        Saved annotations appear here after you close the reader.
+                        Select text while reading, and the passage shows up here. Right-click a row to open, edit, or delete it.
                       </p>
                     </div>
                   )}
@@ -727,7 +820,7 @@ export function DesktopShell({
               helpWindow === "about" ? (
                 <section className="grid h-full place-content-center gap-3 p-8 text-center">
                   <AppIcon size={72} tone="purple" className="mx-auto">
-                    <BookOpen weight="fill" />
+                    <BookOpenIcon weight="fill" />
                   </AppIcon>
                   <div>
                     <h2 className="text-lg font-semibold">Lege</h2>
@@ -889,7 +982,7 @@ export function DesktopShell({
             aria-label="Search"
             onClick={() => setSpotlightOpen(true)}
           >
-            <MagnifyingGlass />
+            <MagnifyingGlassIcon />
           </MenuBarStatusItem>
           <MenuBarStatusItem
             aria-label={
@@ -901,10 +994,10 @@ export function DesktopShell({
             disabled={!notices.length}
             className="disabled:opacity-40"
           >
-            <Bell weight={notices.length ? "fill" : "regular"} />
+            <BellIcon weight={notices.length ? "fill" : "regular"} />
           </MenuBarStatusItem>
           <MenuBarStatusItem aria-label="Control Center" onClick={showControls}>
-            <GearSix />
+            <GearSixIcon />
           </MenuBarStatusItem>
           <MenuBarClock className="max-sm:hidden" />
         </MenuBarStatus>
@@ -931,7 +1024,7 @@ export function DesktopShell({
           />
 
           {showFinder && (
-            <div className="absolute inset-x-3 top-5 bottom-24 mx-auto max-w-[82rem] sm:inset-x-6">
+            <div className="absolute inset-x-3 top-5 bottom-24 mx-auto max-w-328 sm:inset-x-6">
               <FinderWindow
                 key={`${finderFolder}:${shelves.length}:${books.length}:${compact ? "compact" : "wide"}`}
                 root={finder.root}
@@ -942,6 +1035,23 @@ export function DesktopShell({
                 onOpenFile={(file) => {
                   if (file.id.startsWith("book:"))
                     onOpenBook(file.id.slice("book:".length));
+                }}
+                wrapItem={(node, item) => {
+                  if (!node.id.startsWith("book:")) return item;
+                  const book = books.find(
+                    (entry) => entry.id === node.id.slice("book:".length),
+                  );
+                  if (!book) return item;
+                  return (
+                    <BookContextMenu
+                      book={book}
+                      shelves={shelves}
+                      actions={bookActions}
+                      className="block min-w-0"
+                    >
+                      {item}
+                    </BookContextMenu>
+                  );
                 }}
               />
             </div>
@@ -956,7 +1066,7 @@ export function DesktopShell({
               label={`${books.length} books in the library`}
               className="h-8 gap-2 px-4 text-xs"
             >
-              <BookOpen weight="fill" />
+              <BookOpenIcon weight="fill" />
               <span>
                 {books.length ? `${books.length} books` : "Ready to read"}
               </span>
@@ -966,7 +1076,7 @@ export function DesktopShell({
               label="Reading controls open"
               className="h-9 gap-2 px-4 text-xs"
             >
-              <GearSix weight="fill" />
+              <GearSixIcon weight="fill" />
               <span>Reading controls</span>
             </DynamicIslandView>
             <DynamicIslandView
@@ -974,7 +1084,7 @@ export function DesktopShell({
               label="Importing books"
               className="h-9 gap-2 px-4 text-xs"
             >
-              <CircleNotch className="animate-spin" />
+              <CircleNotchIcon className="animate-spin" />
               <span>Importing books…</span>
             </DynamicIslandView>
             <DynamicIslandView
@@ -982,7 +1092,7 @@ export function DesktopShell({
               label={`${notices.length} notifications`}
               className="h-9 gap-2 px-4 text-xs"
             >
-              <Bell weight="fill" />
+              <BellIcon weight="fill" />
               <span>
                 {notices.length === 1
                   ? "1 notification"
@@ -994,7 +1104,7 @@ export function DesktopShell({
               label="Drop files to add them"
               className="h-10 gap-2 px-5 text-xs"
             >
-              <CircleNotch className="animate-spin" />
+              <CircleNotchIcon className="animate-spin" />
               <span>Drop to add books</span>
             </DynamicIslandView>
           </DynamicIsland>
@@ -1020,7 +1130,7 @@ export function DesktopShell({
         )}
 
         {(notificationsOpen || noticePreviewVisible) && (
-          <div className="absolute top-3 right-3 z-40 w-[22.5rem] max-w-[calc(100%-1.5rem)]">
+          <div className="absolute top-3 right-3 z-40 w-90 max-w-[calc(100%-1.5rem)]">
             {notices.length > 0 && (
               <NotificationStack
                 expanded={notificationsOpen}
@@ -1058,25 +1168,25 @@ export function DesktopShell({
           <Dock size={40} magnification={60} distance={112}>
             <DockItem
               label="Reading desk"
-              icon={<House weight="fill" />}
+              icon={<HouseIcon weight="fill" />}
               active={view === "home" && mainOpen}
               onClick={() => showView("home")}
             />
             <DockItem
               label="Library"
-              icon={<Books weight="fill" />}
+              icon={<BooksIcon weight="fill" />}
               active={view === "library" && mainOpen}
               onClick={() => showLibrary()}
             />
             <DockItem
               label="Reader"
-              icon={<BookOpen weight="fill" />}
+              icon={<BookOpenIcon weight="fill" />}
               disabled={!currentBook}
               onClick={onOpenCurrent}
             />
             <DockItem
               label="Notes"
-              icon={<NotePencil weight="fill" />}
+              icon={<NotePencilIcon weight="fill" />}
               containerClassName="max-sm:hidden"
               active={notesWindowOpen}
               disabled={!currentBook}
@@ -1084,13 +1194,13 @@ export function DesktopShell({
             />
             <DockItem
               label="Search"
-              icon={<MagnifyingGlass weight="bold" />}
+              icon={<MagnifyingGlassIcon weight="bold" />}
               active={spotlightOpen}
               onClick={() => setSpotlightOpen(true)}
             />
             <DockItem
               label="Control Center"
-              icon={<GearSix weight="fill" />}
+              icon={<GearSixIcon weight="fill" />}
               active={controlsOpen}
               onClick={showControls}
             />
@@ -1126,7 +1236,7 @@ export function DesktopShell({
             <SpotlightSearchGroup heading="Actions">
               <SpotlightSearchItem
                 value="reading desk home"
-                icon={<House weight="fill" />}
+                icon={<HouseIcon weight="fill" />}
                 detail="Application"
                 onSelect={() => runAndClose(() => showView("home"))}
               >
@@ -1134,7 +1244,7 @@ export function DesktopShell({
               </SpotlightSearchItem>
               <SpotlightSearchItem
                 value="library browse books"
-                icon={<Books weight="fill" />}
+                icon={<BooksIcon weight="fill" />}
                 detail="Application"
                 onSelect={() =>
                   runAndClose(() => showLibrary())
@@ -1144,7 +1254,7 @@ export function DesktopShell({
               </SpotlightSearchItem>
               <SpotlightSearchItem
                 value="organize manage shelves"
-                icon={<Folder weight="fill" />}
+                icon={<FolderIcon weight="fill" />}
                 detail="Application"
                 onSelect={() =>
                   runAndClose(() => showView("library", "organize"))
@@ -1154,7 +1264,7 @@ export function DesktopShell({
               </SpotlightSearchItem>
               <SpotlightSearchItem
                 value="add import pdf epub"
-                icon={<Plus weight="bold" />}
+                icon={<PlusIcon weight="bold" />}
                 detail="Action"
                 onSelect={() => runAndClose(onAddBook)}
               >
@@ -1162,7 +1272,7 @@ export function DesktopShell({
               </SpotlightSearchItem>
               <SpotlightSearchItem
                 value="backup export library"
-                icon={<DownloadSimple />}
+                icon={<DownloadSimpleIcon />}
                 detail="Action"
                 onSelect={() => runAndClose(onBackup)}
               >
@@ -1170,7 +1280,7 @@ export function DesktopShell({
               </SpotlightSearchItem>
               <SpotlightSearchItem
                 value="restore import backup"
-                icon={<UploadSimple />}
+                icon={<UploadSimpleIcon />}
                 detail="Action"
                 onSelect={() => runAndClose(onRestore)}
               >
@@ -1184,7 +1294,7 @@ export function DesktopShell({
                   <SpotlightSearchItem
                     key={book.id}
                     value={`${book.title} ${book.author}`}
-                    icon={<BookOpen weight="fill" />}
+                    icon={<BookOpenIcon weight="fill" />}
                     detail={`${book.format.toUpperCase()} · ${Math.round(book.progress)}%`}
                     onSelect={() => runAndClose(() => onOpenBook(book.id))}
                   >
@@ -1207,9 +1317,9 @@ export function DesktopShell({
                         value={`${label} ${book?.title ?? ""}`}
                         icon={
                           item.kind === "highlight" ? (
-                            <TextAa />
+                            <TextAaIcon />
                           ) : (
-                            <NotePencil weight="fill" />
+                            <NotePencilIcon weight="fill" />
                           )
                         }
                         detail={book?.title ?? "Annotation"}
@@ -1232,7 +1342,7 @@ export function DesktopShell({
                   <SpotlightSearchItem
                     key={shelf.id}
                     value={`${shelf.name} shelf`}
-                    icon={<Folder weight="fill" />}
+                    icon={<FolderIcon weight="fill" />}
                     detail="Shelf"
                     onSelect={() =>
                       runAndClose(() => showLibrary(`shelf:${shelf.id}`))

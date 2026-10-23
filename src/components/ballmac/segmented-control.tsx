@@ -9,7 +9,7 @@ import { useDirection } from "@/lib/ballmac/direction"
 import { cn } from "@/lib/utils"
 
 const segmentedControlVariants = cva(
-  "relative inline-flex w-fit max-w-full items-center rounded-[9px] bg-foreground/[0.07] p-0.5 shadow-[inset_0_0_0_0.5px_rgb(0_0_0/0.06)] dark:bg-white/[0.08] dark:shadow-[inset_0_0_0_0.5px_rgb(255_255_255/0.06)] data-[disabled]:opacity-50",
+  "relative inline-flex w-fit max-w-full items-center rounded-[9px] bg-foreground/7 p-0.5 shadow-[inset_0_0_0_0.5px_rgb(0_0_0/0.06)] dark:bg-white/8 dark:shadow-[inset_0_0_0_0.5px_rgb(255_255_255/0.06)] data-[disabled]:opacity-50",
   {
     variants: {
       size: {
@@ -117,7 +117,7 @@ function SegmentedControlItem({ value, className, children, ...props }: Segmente
           layoutId={context.layoutId}
           aria-hidden="true"
           data-slot="segmented-control-indicator"
-          className="absolute inset-0 rounded-[7px] bg-background shadow-[0_0_0_0.5px_rgb(0_0_0/0.08),0_1px_2px_0_rgb(0_0_0/0.14),0_2px_6px_-2px_rgb(0_0_0/0.1)] dark:bg-white/[0.2] dark:shadow-[0_0_0_0.5px_rgb(0_0_0/0.4),inset_0_0.5px_0_rgb(255_255_255/0.12),0_1px_2px_rgb(0_0_0/0.3)]"
+          className="absolute inset-0 rounded-[7px] bg-background shadow-[0_0_0_0.5px_rgb(0_0_0/0.08),0_1px_2px_0_rgb(0_0_0/0.14),0_2px_6px_-2px_rgb(0_0_0/0.1)] dark:bg-white/20 dark:shadow-[0_0_0_0.5px_rgb(0_0_0/0.4),inset_0_0.5px_0_rgb(255_255_255/0.12),0_1px_2px_rgb(0_0_0/0.3)]"
           transition={{ type: "spring", stiffness: 500, damping: 38, mass: 0.8 }}
         />
       ) : null}

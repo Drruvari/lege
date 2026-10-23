@@ -17,11 +17,13 @@ export {
 export { LANGUAGES, translateText } from "./lib/translation";
 export {
   DEFAULT_PREFS,
+  DISMISS_SELECTION_EVENT,
   PLACEHOLDER_AUTHOR,
   type Annotation,
   type BookMeta,
   type CapturedSelection,
   type HighlightRect,
+  type MarkColor,
   type ReaderHandle,
   type ReaderPreferences,
   type ReaderTheme,

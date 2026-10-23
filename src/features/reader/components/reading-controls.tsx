@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Minus, Plus, TextAa } from "@phosphor-icons/react";
+import { MinusIcon, PlusIcon, TextAaIcon } from "@phosphor-icons/react";
 
 import {
   SegmentedControl,
@@ -128,7 +128,7 @@ export function ReadingControls({
       <PopoverTrigger
         render={
           <IconButton label="Text and page">
-            <TextAa />
+            <TextAaIcon />
           </IconButton>
         }
       />
@@ -159,7 +159,7 @@ export function ReadingControls({
               className="hover:bg-background"
             >
               {pdf ? (
-                <Minus />
+                <MinusIcon />
               ) : (
                 <span className="font-reading text-xs">A</span>
               )}
@@ -175,7 +175,7 @@ export function ReadingControls({
               onClick={() => setSize(size + step)}
               className="hover:bg-background"
             >
-              {pdf ? <Plus /> : <span className="font-reading text-lg">A</span>}
+              {pdf ? <PlusIcon /> : <span className="font-reading text-lg">A</span>}
             </Button>
           </div>
         </Row>

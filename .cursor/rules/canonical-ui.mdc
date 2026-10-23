@@ -1,0 +1,20 @@
+---
+description: Canonical Tailwind classes and current icon names
+globs: src/**/*.{tsx,ts,css}
+alwaysApply: false
+---
+
+# Canonical classes and icons
+
+Write Tailwind classes in the form the language server accepts. Do not introduce the older spellings.
+
+- Opacity modifiers are percentages: `bg-foreground/6`, not `bg-foreground/[0.06]`. `0.1` is `/10`, `0.025` is `/2.5`.
+- Spacing on the default scale uses the scale: `h-112` for 28rem, `py-0.75` for 3px.
+- CSS variables in utilities use parentheses: `bg-(--token)`, including a fallback such as `bg-(--mac-accent,oklch(0.53_0.2_258))`.
+- A descendant slot is `**:data-[slot=name]:absolute`, not `[&_[data-slot=name]]:absolute`.
+- Wrapping is `wrap-break-word`, not `break-words`.
+
+Icons come from the current names only:
+
+- Phosphor: `ArrowRightIcon`, not the deprecated `ArrowRight`. Every import from `@phosphor-icons/react` ends in `Icon`, except `IconContext`.
+- Lucide: `ChevronLeftIcon`, not `ChevronLeft`.

@@ -125,25 +125,32 @@ type MacWindowTitleBarProps = Omit<React.ComponentProps<"div">, "title"> & {
   title?: React.ReactNode
   /** Draw the traffic lights at the leading edge. Turn off when a MacWindowSidebar already shows them. */
   controls?: boolean
+  /** Controls that sit just after the traffic lights. */
+  leading?: React.ReactNode
 }
 
 /**
  * The title bar. With only a title it is a compact 28px bar; children render as a trailing toolbar
  * and grow it to the 52px unified-toolbar height.
  */
-function MacWindowTitleBar({ title, controls = true, className, children, ...props }: MacWindowTitleBarProps) {
-  const hasToolbar = React.Children.count(children) > 0
+function MacWindowTitleBar({ title, controls = true, leading, className, children, ...props }: MacWindowTitleBarProps) {
+  const hasToolbar = React.Children.count(children) > 0 || leading != null
   return (
     <div
       data-slot="mac-window-titlebar"
       className={cn(
-        "relative flex shrink-0 items-center gap-3 border-b border-foreground/[0.08] px-3 select-none",
-        hasToolbar ? "h-[52px] px-4" : "h-8",
+        "relative flex shrink-0 items-center gap-2 border-b border-foreground/8 px-3 select-none",
+        hasToolbar ? "h-[52px] px-3 sm:px-4" : "h-8",
         className
       )}
       {...props}
     >
       {controls ? <MacWindowControls /> : null}
+      {leading ? (
+        <div data-slot="mac-window-leading" className="flex shrink-0 items-center gap-0.5">
+          {leading}
+        </div>
+      ) : null}
       {title ? (
         <div
           data-slot="mac-window-title"
@@ -155,8 +162,8 @@ function MacWindowTitleBar({ title, controls = true, className, children, ...pro
           {title}
         </div>
       ) : null}
-      {hasToolbar ? (
-        <div data-slot="mac-window-toolbar" className="ms-auto flex min-w-0 items-center gap-1 text-foreground/70 group-data-[state=inactive]/mac-window:text-foreground/35">
+      {React.Children.count(children) > 0 ? (
+        <div data-slot="mac-window-toolbar" className="ms-auto flex min-w-0 items-center gap-0.5 text-foreground/70 group-data-[state=inactive]/mac-window:text-foreground/35">
           {children}
         </div>
       ) : null}
@@ -173,7 +180,7 @@ function MacWindowToolbarButton({ className, type = "button", ...props }: MacWin
       type={type}
       data-slot="mac-window-toolbar-button"
       className={cn(
-        "inline-flex h-7 min-w-7 shrink-0 items-center justify-center gap-1.5 rounded-md px-1.5 text-[13px] outline-none transition-colors duration-150 hover:bg-foreground/[0.07] hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0",
+        "inline-flex h-7 min-w-7 shrink-0 items-center justify-center gap-1.5 rounded-md px-1.5 text-[13px] outline-none transition-colors duration-150 hover:bg-foreground/7 hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0",
         className
       )}
       {...props}
@@ -192,7 +199,7 @@ function MacWindowSidebar({ controls = true, className, children, ...props }: Ma
     <div
       data-slot="mac-window-sidebar"
       className={cn(
-        "flex w-52 shrink-0 flex-col border-e border-foreground/[0.08] bg-background/60 backdrop-blur-2xl backdrop-saturate-150 dark:bg-background/50",
+        "flex w-52 shrink-0 flex-col border-e border-foreground/8 bg-background/60 backdrop-blur-2xl backdrop-saturate-150 dark:bg-background/50",
         className
       )}
       {...props}
@@ -221,7 +228,7 @@ function MacWindowSidebarItem({ selected = false, className, type = "button", ..
       data-selected={selected ? "" : undefined}
       aria-current={selected ? "true" : undefined}
       className={cn(
-        "flex h-7 w-full items-center gap-2 rounded-md px-2 text-start text-[13px] text-foreground/85 outline-none transition-colors duration-100 hover:bg-foreground/[0.05] focus-visible:ring-[3px] focus-visible:ring-ring/50 data-selected:bg-foreground/[0.09] data-selected:font-medium data-selected:text-foreground [&_svg]:size-4 [&_svg]:shrink-0",
+        "flex h-7 w-full items-center gap-2 rounded-md px-2 text-start text-[13px] text-foreground/85 outline-none transition-colors duration-100 hover:bg-foreground/5 focus-visible:ring-[3px] focus-visible:ring-ring/50 data-selected:bg-foreground/9 data-selected:font-medium data-selected:text-foreground [&_svg]:size-4 [&_svg]:shrink-0",
         className
       )}
       {...props}

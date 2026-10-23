@@ -1,15 +1,15 @@
 import type { ReactElement, ReactNode } from "react";
 import {
-  ArrowCounterClockwise,
-  BookOpen,
-  Books,
-  Check,
-  CheckCircle,
-  DotsThree,
-  DownloadSimple,
-  ImageSquare,
-  PencilSimple,
-  Trash,
+  ArrowCounterClockwiseIcon,
+  BookOpenIcon,
+  BooksIcon,
+  CheckIcon,
+  CheckCircleIcon,
+  DotsThreeIcon,
+  DownloadSimpleIcon,
+  ImageSquareIcon,
+  PencilSimpleIcon,
+  TrashIcon,
 } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ballmac/button";
@@ -68,25 +68,25 @@ function BookMenuItems({
       {showOpen && (
         <>
           <DropdownMenuItem onClick={() => actions.open(book)}>
-            <BookOpen />
+            <BookOpenIcon />
             {book.progress > 0 ? "Continue reading" : "Start reading"}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
         </>
       )}
       <DropdownMenuItem onClick={() => actions.edit(book)}>
-        <PencilSimple /> Rename
+        <PencilSimpleIcon /> Rename
       </DropdownMenuItem>
       <DropdownMenuItem onClick={() => actions.changeCover(book)}>
-        <ImageSquare /> Change cover
+        <ImageSquareIcon /> Change cover
       </DropdownMenuItem>
       <DropdownMenuSub>
         <DropdownMenuSubTrigger>
-          <Books /> Move to shelf
+          <BooksIcon /> Move to shelf
         </DropdownMenuSubTrigger>
         <DropdownMenuSubContent className="min-w-40">
           <DropdownMenuItem onClick={() => actions.moveToShelf(book, null)}>
-            <Check className={book.shelfId ? "invisible" : ""} />
+            <CheckIcon className={book.shelfId ? "invisible" : ""} />
             Unsorted
           </DropdownMenuItem>
           {shelves.map((shelf) => (
@@ -94,7 +94,7 @@ function BookMenuItems({
               key={shelf.id}
               onClick={() => actions.moveToShelf(book, shelf.id)}
             >
-              <Check className={book.shelfId === shelf.id ? "" : "invisible"} />
+              <CheckIcon className={book.shelfId === shelf.id ? "" : "invisible"} />
               {shelf.name}
             </DropdownMenuItem>
           ))}
@@ -106,18 +106,18 @@ function BookMenuItems({
         </DropdownMenuSubContent>
       </DropdownMenuSub>
       <DropdownMenuItem onClick={() => actions.toggleFinished(book)}>
-        {finished ? <ArrowCounterClockwise /> : <CheckCircle />}
+        {finished ? <ArrowCounterClockwiseIcon /> : <CheckCircleIcon />}
         {finished ? "Mark as unread" : "Mark as finished"}
       </DropdownMenuItem>
       <DropdownMenuItem onClick={() => actions.download(book)}>
-        <DownloadSimple /> Download file
+        <DownloadSimpleIcon /> Download file
       </DropdownMenuItem>
       <DropdownMenuSeparator />
       <DropdownMenuItem
         variant="destructive"
         onClick={() => actions.remove(book)}
       >
-        <Trash /> Delete book
+        <TrashIcon /> Delete book
       </DropdownMenuItem>
     </>
   );
@@ -135,7 +135,7 @@ function BookMacMenuItems({
       {showOpen && (
         <>
           <MacContextMenuItem
-            icon={<BookOpen />}
+            icon={<BookOpenIcon />}
             shortcut="↵"
             onSelect={() => actions.open(book)}
           >
@@ -145,19 +145,19 @@ function BookMacMenuItems({
         </>
       )}
       <MacContextMenuItem
-        icon={<PencilSimple />}
+        icon={<PencilSimpleIcon />}
         onSelect={() => actions.edit(book)}
       >
         Rename
       </MacContextMenuItem>
       <MacContextMenuItem
-        icon={<ImageSquare />}
+        icon={<ImageSquareIcon />}
         onSelect={() => actions.changeCover(book)}
       >
         Change cover
       </MacContextMenuItem>
       <MacContextMenuSub>
-        <MacContextMenuSubTrigger icon={<Books />}>
+        <MacContextMenuSubTrigger icon={<BooksIcon />}>
           Move to shelf
         </MacContextMenuSubTrigger>
         <MacContextMenuSubContent>
@@ -182,13 +182,13 @@ function BookMacMenuItems({
         </MacContextMenuSubContent>
       </MacContextMenuSub>
       <MacContextMenuItem
-        icon={finished ? <ArrowCounterClockwise /> : <CheckCircle />}
+        icon={finished ? <ArrowCounterClockwiseIcon /> : <CheckCircleIcon />}
         onSelect={() => actions.toggleFinished(book)}
       >
         {finished ? "Mark as unread" : "Mark as finished"}
       </MacContextMenuItem>
       <MacContextMenuItem
-        icon={<DownloadSimple />}
+        icon={<DownloadSimpleIcon />}
         onSelect={() => actions.download(book)}
       >
         Download file
@@ -196,7 +196,7 @@ function BookMacMenuItems({
       <MacContextMenuSeparator />
       <MacContextMenuItem
         destructive
-        icon={<Trash />}
+        icon={<TrashIcon />}
         onSelect={() => actions.remove(book)}
       >
         Delete book
@@ -229,7 +229,7 @@ export function BookActionsMenu({
           )
         }
       >
-        <DotsThree weight="bold" />
+        <DotsThreeIcon weight="bold" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align={align} className="w-52">
         <BookMenuItems {...props} />

@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Inbox } from "lucide-react"
+import { InboxIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
   Empty,
@@ -37,7 +37,7 @@ function EmptyState({
       className={cn("bg-card/70", className)}
       {...props}
     >
-      <EmptyMedia>{icon ?? <Inbox aria-hidden="true" />}</EmptyMedia>
+      <EmptyMedia>{icon ?? <InboxIcon aria-hidden="true" />}</EmptyMedia>
       <EmptyTitle>{title}</EmptyTitle>
       <EmptyDescription>{description}</EmptyDescription>
       {(action || secondaryAction) && (

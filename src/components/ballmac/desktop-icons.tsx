@@ -230,7 +230,7 @@ function DesktopIcons({ items: initial, onItemsChange, onOpen, cell = 96, label,
             </span>
             <span
               aria-hidden="true"
-              className={cn("line-clamp-2 max-w-full rounded-[5px] px-1.5 text-center text-[12px] leading-[14px] font-medium break-words text-white [text-shadow:0_1px_3px_rgb(0_0_0/0.7)]", isSel && "bg-(--mac-accent) [text-shadow:none]")}
+              className={cn("line-clamp-2 max-w-full rounded-[5px] px-1.5 text-center text-[12px] leading-[14px] font-medium wrap-break-word text-white [text-shadow:0_1px_3px_rgb(0_0_0/0.7)]", isSel && "bg-(--mac-accent) [text-shadow:none]")}
             >
               {item.name}
             </span>

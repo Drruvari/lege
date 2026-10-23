@@ -1,13 +1,13 @@
 import { useMemo, useState, type ReactNode } from "react";
 import {
-  BookOpen,
-  Books,
-  CheckCircle,
-  Folder,
-  FolderOpen,
-  PencilSimple,
-  Plus,
-  Trash,
+  BookOpenIcon,
+  BooksIcon,
+  CheckCircleIcon,
+  FolderIcon,
+  FolderOpenIcon,
+  PencilSimpleIcon,
+  PlusIcon,
+  TrashIcon,
 } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ballmac/button";
@@ -172,28 +172,28 @@ export function LibraryView({
         <div className="px-2">
           <SourceItem
             selected={scope === "all"}
-            icon={<Books weight="fill" />}
+            icon={<BooksIcon weight="fill" />}
             label="All Books"
             count={counts.all}
             onClick={() => setScope("all")}
           />
           <SourceItem
             selected={scope === "reading"}
-            icon={<BookOpen weight="fill" />}
+            icon={<BookOpenIcon weight="fill" />}
             label="Reading"
             count={counts.reading}
             onClick={() => setScope("reading")}
           />
           <SourceItem
             selected={scope === "finished"}
-            icon={<CheckCircle weight="fill" />}
+            icon={<CheckCircleIcon weight="fill" />}
             label="Finished"
             count={counts.finished}
             onClick={() => setScope("finished")}
           />
           <SourceItem
             selected={scope === "unsorted"}
-            icon={<FolderOpen weight="fill" />}
+            icon={<FolderOpenIcon weight="fill" />}
             label="Unsorted"
             count={counts.unsorted}
             onClick={() => setScope("unsorted")}
@@ -207,9 +207,9 @@ export function LibraryView({
             aria-label="New shelf"
             title="New shelf"
             onClick={() => setCreating(true)}
-            className="flex size-6 items-center justify-center rounded-md text-muted-foreground outline-none transition-colors hover:bg-foreground/[0.06] hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="flex size-6 items-center justify-center rounded-md text-muted-foreground outline-none transition-colors hover:bg-foreground/6 hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
           >
-            <Plus className="size-3.5" />
+            <PlusIcon className="size-3.5" />
           </button>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3">
@@ -228,7 +228,7 @@ export function LibraryView({
                 <MacContextMenuTrigger className="block">
                   <SourceItem
                     selected={scope === `shelf:${shelf.id}`}
-                    icon={<Folder weight="fill" />}
+                    icon={<FolderIcon weight="fill" />}
                     label={shelf.name}
                     count={
                       books.filter((book) => book.shelfId === shelf.id).length
@@ -238,7 +238,7 @@ export function LibraryView({
                 </MacContextMenuTrigger>
                 <MacContextMenuContent>
                   <MacContextMenuItem
-                    icon={<PencilSimple />}
+                    icon={<PencilSimpleIcon />}
                     onSelect={() => startRename(shelf)}
                   >
                     Rename shelf
@@ -246,7 +246,7 @@ export function LibraryView({
                   <MacContextMenuSeparator />
                   <MacContextMenuItem
                     destructive
-                    icon={<Trash />}
+                    icon={<TrashIcon />}
                     onSelect={() => deleteShelf(shelf)}
                   >
                     Delete shelf
@@ -299,7 +299,7 @@ export function LibraryView({
           </SegmentedControl>
           <ToolbarButton
             aria-label="Add books"
-            icon={<Plus />}
+            icon={<PlusIcon />}
             onClick={onAddBook}
           >
             <span className="hidden sm:inline">Add</span>
@@ -352,7 +352,7 @@ export function LibraryView({
               </MacContextMenuTrigger>
               <MacContextMenuContent>
                 <MacContextMenuItem
-                  icon={<PencilSimple />}
+                  icon={<PencilSimpleIcon />}
                   onSelect={() => startRename(shelf)}
                 >
                   Rename shelf
@@ -360,7 +360,7 @@ export function LibraryView({
                 <MacContextMenuSeparator />
                 <MacContextMenuItem
                   destructive
-                  icon={<Trash />}
+                  icon={<TrashIcon />}
                   onSelect={() => deleteShelf(shelf)}
                 >
                   Delete shelf
@@ -369,7 +369,7 @@ export function LibraryView({
             </MacContextMenu>
           ))}
           <MobileScope selected={false} onClick={() => setCreating(true)}>
-            <Plus /> New shelf
+            <PlusIcon /> New shelf
           </MobileScope>
         </div>
 
@@ -412,7 +412,7 @@ export function LibraryView({
               icon={<PhosphorNotebookIcon size={26} />}
               action={
                 <Button onClick={onAddBook}>
-                  <Plus /> Add books
+                  <PlusIcon /> Add books
                 </Button>
               }
             />
@@ -424,9 +424,9 @@ export function LibraryView({
               description={empty.body}
               icon={
                 scope === "reading" ? (
-                  <BookOpen />
+                  <BookOpenIcon />
                 ) : scope === "finished" ? (
-                  <CheckCircle />
+                  <CheckCircleIcon />
                 ) : (
                   <PhosphorNotebookIcon size={26} />
                 )
@@ -587,7 +587,7 @@ function BookRow({
   const progress = Math.round(book.progress);
   return (
     <BookContextMenu book={book} shelves={shelves} actions={actions}>
-      <Item className="rounded-none border-0 px-4 py-3 transition-colors hover:bg-foreground/[0.025] focus-within:bg-foreground/[0.025] sm:px-5">
+      <Item className="rounded-none border-0 px-4 py-3 transition-colors hover:bg-foreground/2.5 focus-within:bg-foreground/2.5 sm:px-5">
         <ItemMedia>
           <button
             type="button"

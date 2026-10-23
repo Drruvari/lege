@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  ArrowCounterClockwise,
-  UploadSimple,
+  ArrowCounterClockwiseIcon,
+  UploadSimpleIcon,
 } from "@phosphor-icons/react";
 
 import {
@@ -149,7 +149,7 @@ export function EditBookDialog({
                   disabled={busy}
                   onClick={() => fileRef.current?.click()}
                 >
-                  <UploadSimple data-icon="inline-start" /> Upload image
+                  <UploadSimpleIcon data-icon="inline-start" /> Upload image
                 </Button>
                 <Button
                   type="button"
@@ -158,7 +158,7 @@ export function EditBookDialog({
                   disabled={busy}
                   onClick={() => void restore()}
                 >
-                  <ArrowCounterClockwise data-icon="inline-start" /> Use
+                  <ArrowCounterClockwiseIcon data-icon="inline-start" /> Use
                   original
                 </Button>
                 {cover && (

@@ -7,7 +7,9 @@ import {
 } from "react";
 import ePub from "epubjs";
 import { Spinner } from "@/components/ui/spinner";
+import { markFill } from "../model/mark-colors";
 import {
+  DISMISS_SELECTION_EVENT,
   PAGE_TAP_EVENT,
   type Annotation,
   type CapturedSelection,
@@ -24,6 +26,7 @@ interface Props {
   onProgress(location: string, progress: number): void;
   onToc(items: TocEntry[]): void;
   onSelection(selection: CapturedSelection): void;
+  onOpenMark?(id: string, x: number, y: number): void;
   onPagesLeft?(pages: number): void;
 }
 
@@ -49,6 +52,7 @@ export const EpubReader = forwardRef<ReaderHandle, Props>(function EpubReader(
     onProgress,
     onToc,
     onSelection,
+    onOpenMark,
     onPagesLeft,
   },
   ref,
@@ -60,6 +64,7 @@ export const EpubReader = forwardRef<ReaderHandle, Props>(function EpubReader(
   const progressRef = useRef(onProgress);
   const tocRef = useRef(onToc);
   const selectionRef = useRef(onSelection);
+  const markRef = useRef(onOpenMark);
   const pagesLeftRef = useRef(onPagesLeft);
   const [loadError, setLoadError] = useState("");
   const [ready, setReady] = useState(false);
@@ -69,8 +74,9 @@ export const EpubReader = forwardRef<ReaderHandle, Props>(function EpubReader(
     progressRef.current = onProgress;
     tocRef.current = onToc;
     selectionRef.current = onSelection;
+    markRef.current = onOpenMark;
     pagesLeftRef.current = onPagesLeft;
-  }, [annotations, onPagesLeft, onProgress, onSelection, onToc]);
+  }, [annotations, onOpenMark, onPagesLeft, onProgress, onSelection, onToc]);
 
   useImperativeHandle(
     ref,
@@ -112,14 +118,35 @@ export const EpubReader = forwardRef<ReaderHandle, Props>(function EpubReader(
         });
         renditionRef.current = rendition;
         rendition.hooks.content.register(
-          (contents: { addStylesheet(url: string): Promise<unknown> }) =>
-            contents.addStylesheet(BOOK_FONTS),
+          (contents: {
+            addStylesheet(url: string): Promise<unknown>;
+            document: Document;
+          }) => {
+            void contents.addStylesheet(BOOK_FONTS);
+            contents.document.addEventListener("contextmenu", (event) => {
+              const point = framePoint(event, contents.document);
+              const id = highlightIdAt(rendition, point.x, point.y);
+              if (!id) return;
+              event.preventDefault();
+              markRef.current?.(id, point.x, point.y);
+            });
+            contents.document.addEventListener("mousedown", (event) => {
+              const point = framePoint(event, contents.document);
+              if (highlightIdAt(rendition, point.x, point.y)) return;
+              const existing = contents.document.defaultView?.getSelection();
+              if (!existing?.toString()) return;
+              existing.removeAllRanges();
+              window.dispatchEvent(new Event(DISMISS_SELECTION_EVENT));
+            });
+          },
         );
 
         rendition.on(
           "click",
-          (_event: MouseEvent, contents: { window: Window }) => {
+          (event: MouseEvent, contents: { window: Window; document: Document }) => {
             if (contents.window.getSelection()?.toString()) return;
+            const point = framePoint(event, contents.document);
+            if (highlightIdAt(rendition, point.x, point.y)) return;
             window.dispatchEvent(new Event(PAGE_TAP_EVENT));
           },
         );
@@ -259,8 +286,10 @@ export const EpubReader = forwardRef<ReaderHandle, Props>(function EpubReader(
       timer = window.setTimeout(() => {
         const rendition = renditionRef.current as {
           resize(width?: number, height?: number): void;
+          views(): unknown;
         } | null;
         rendition?.resize();
+        window.setTimeout(() => redrawEpubHighlights(rendition), 40);
       }, 120);
     });
     observer.observe(host);
@@ -306,10 +335,11 @@ export const EpubReader = forwardRef<ReaderHandle, Props>(function EpubReader(
               ? "oklch(0.47 0.085 50)"
               : "oklch(0.44 0.12 28)",
       },
-      "::selection": { background: "rgba(214,169,95,0.4)" },
+      "::selection": { background: "rgba(96, 140, 196, 0.34)" },
     });
     r.themes.select("lege-reading");
     r.themes.fontSize(`${Math.round((preferences.fontSize / 18) * 100)}%`);
+    return scheduleHighlightRedraw(r);
   }, [preferences, ready]);
 
   // Keep EPUB highlights anchored on the underlying content as the reader moves.
@@ -322,12 +352,25 @@ export const EpubReader = forwardRef<ReaderHandle, Props>(function EpubReader(
       rendition.annotations.highlight(
         item.location,
         { id: item.id },
-        undefined,
+        (event: Event) => {
+          const mark = event.currentTarget;
+          if (!(mark instanceof Element)) return;
+          const box = mark.getBoundingClientRect();
+          const frame =
+            mark.ownerDocument.defaultView?.frameElement?.getBoundingClientRect();
+          markRef.current?.(
+            item.id,
+            box.left + (frame?.left ?? 0) + box.width / 2,
+            box.top + (frame?.top ?? 0),
+          );
+        },
         "lege-highlight",
-        { fill: "#e2bb68", "fill-opacity": "0.34" },
+        { fill: markFill(item.color, "brass"), "fill-opacity": "0.45" },
       );
     }
+    const cancelRedraw = scheduleHighlightRedraw(rendition);
     return () => {
+      cancelRedraw();
       for (const item of annotations.filter(
         (a) => a.location.startsWith("epubcfi(") && a.kind !== "bookmark",
       )) {
@@ -341,7 +384,7 @@ export const EpubReader = forwardRef<ReaderHandle, Props>(function EpubReader(
   }, [annotations, ready]);
 
   return (
-    <div className="relative flex min-h-0 w-full flex-1 overflow-hidden px-8 pt-10 pb-6 sm:px-14 sm:pt-14 sm:pb-10">
+    <div className="relative flex min-h-0 w-full flex-1 overflow-hidden px-6 py-8 sm:px-12 sm:py-10">
       {!ready && !loadError && (
         <div className="absolute inset-0 z-10 flex items-center justify-center gap-2 bg-page text-sm text-muted-foreground">
           <Spinner /> Opening your book…
@@ -356,3 +399,65 @@ export const EpubReader = forwardRef<ReaderHandle, Props>(function EpubReader(
     </div>
   );
 });
+
+type EpubView = {
+  pane?: { render(): void };
+  highlights?: Record<
+    string,
+    {
+      element?: HTMLElement;
+      mark?: { getClientRects(): DOMRect[] };
+    }
+  >;
+};
+
+function epubViews(rendition: { views(): unknown }) {
+  const views = rendition.views() as { all?: () => EpubView[] };
+  return typeof views?.all === "function" ? views.all() : [];
+}
+
+function redrawEpubHighlights(rendition: { views(): unknown } | null) {
+  if (!rendition) return;
+  try {
+    for (const view of epubViews(rendition)) view.pane?.render();
+  } catch {
+    /* The rendition can close while a redraw is still queued. */
+  }
+}
+
+function scheduleHighlightRedraw(rendition: { views(): unknown }) {
+  const timers = [0, 60, 360].map((delay) =>
+    window.setTimeout(() => redrawEpubHighlights(rendition), delay),
+  );
+  return () => {
+    for (const timer of timers) window.clearTimeout(timer);
+  };
+}
+
+function framePoint(event: MouseEvent, doc: Document) {
+  const frame = doc.defaultView?.frameElement?.getBoundingClientRect();
+  return {
+    x: event.clientX + (frame?.left ?? 0),
+    y: event.clientY + (frame?.top ?? 0),
+  };
+}
+
+function highlightIdAt(
+  rendition: { views(): unknown } | null,
+  x: number,
+  y: number,
+) {
+  if (!rendition) return null;
+  for (const view of epubViews(rendition)) {
+    for (const item of Object.values(view.highlights ?? {})) {
+      const rects = item.mark?.getClientRects() ?? [];
+      const hit = rects.some(
+        (rect) =>
+          x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom,
+      );
+      if (!hit) continue;
+      return item.element?.dataset.id ?? null;
+    }
+  }
+  return null;
+}

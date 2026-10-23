@@ -1,4 +1,4 @@
-import { ArrowRight, CloudSlash } from "@phosphor-icons/react";
+import { ArrowRightIcon, CloudSlashIcon } from "@phosphor-icons/react";
 
 import {
   SegmentedControl,
@@ -31,6 +31,7 @@ import {
   type ReaderPreferences,
   type ReaderTheme,
 } from "../model/reader-types";
+import { MarkColorPicker } from "./selection-toolbar";
 
 export const themes: { value: ReaderTheme; label: string }[] = [
   { value: "paper", label: "Paper" },
@@ -59,7 +60,7 @@ function LanguagePair({
           </NativeSelectOption>
         ))}
       </NativeSelect>
-      <ArrowRight
+      <ArrowRightIcon
         className="size-4 shrink-0 text-muted-foreground"
         aria-hidden="true"
       />
@@ -203,6 +204,37 @@ export function SettingsDialog({
 
         <Separator />
 
+        <div className="grid gap-5">
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <Label>Highlight color</Label>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                The ink for the next passage you mark.
+              </p>
+            </div>
+            <MarkColorPicker
+              value={preferences.highlightColor}
+              onChange={(highlightColor) => onChange({ highlightColor })}
+              label="Default highlight color"
+            />
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <Label>Bookmark color</Label>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                The ribbon for pages you want to find again.
+              </p>
+            </div>
+            <MarkColorPicker
+              value={preferences.bookmarkColor}
+              onChange={(bookmarkColor) => onChange({ bookmarkColor })}
+              label="Default bookmark color"
+            />
+          </div>
+        </div>
+
+        <Separator />
+
         <div className="grid gap-3">
           <Label>Translate</Label>
           <LanguagePair preferences={preferences} onChange={onChange} />
@@ -227,6 +259,7 @@ export function SettingsDialog({
 
 export interface NoteDraft {
   id?: string;
+  bookId?: string;
   quote: string;
   location: string;
   value: string;
@@ -370,7 +403,7 @@ export function TranslateDialog({
           )}
         </div>
         <p className="flex items-center gap-2 text-xs text-muted-foreground">
-          <CloudSlash className="size-4 shrink-0" /> Only the selected passage
+          <CloudSlashIcon className="size-4 shrink-0" /> Only the selected passage
           is ever shared.
         </p>
         <SheetDialogFooter>
