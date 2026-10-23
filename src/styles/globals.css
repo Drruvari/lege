@@ -1,0 +1,210 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "./theme.css";
+
+@theme inline {
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--accordion-panel-height, auto);
+    }
+  }
+  @keyframes accordion-up {
+    from {
+      height: var(--accordion-panel-height, auto);
+    }
+    to {
+      height: 0;
+    }
+  }
+}
+
+@custom-variant data-open {
+  &:where([data-state="open"]),
+  &:where([data-open]:not([data-open="false"])) {
+    @slot;
+  }
+}
+@custom-variant data-closed {
+  &:where([data-state="closed"]),
+  &:where([data-closed]:not([data-closed="false"])) {
+    @slot;
+  }
+}
+@custom-variant data-checked {
+  &:where([data-state="checked"]),
+  &:where([data-checked]:not([data-checked="false"])) {
+    @slot;
+  }
+}
+@custom-variant data-unchecked {
+  &:where([data-state="unchecked"]),
+  &:where([data-unchecked]:not([data-unchecked="false"])) {
+    @slot;
+  }
+}
+@custom-variant data-selected {
+  &:where([data-selected="true"]) {
+    @slot;
+  }
+}
+@custom-variant data-disabled {
+  &:where([data-disabled="true"]),
+  &:where([data-disabled]:not([data-disabled="false"])) {
+    @slot;
+  }
+}
+@custom-variant data-active {
+  &:where([data-state="active"]),
+  &:where([data-active]:not([data-active="false"])) {
+    @slot;
+  }
+}
+@custom-variant data-horizontal {
+  &:where([data-orientation="horizontal"]) {
+    @slot;
+  }
+}
+@custom-variant data-vertical {
+  &:where([data-orientation="vertical"]) {
+    @slot;
+  }
+}
+@custom-variant dark (&:is(.dark *));
+@custom-variant theme-sepia (&:is(.theme-sepia *));
+
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+@utility scroll-fade-y {
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    #000 24px,
+    #000 calc(100% - 24px),
+    transparent
+  );
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    min-width: 320px;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  @supports (corner-shape: squircle) {
+    *,
+    ::before,
+    ::after {
+      corner-shape: squircle;
+    }
+    .rounded-full {
+      corner-shape: round;
+    }
+  }
+}
+
+.pdf-page-wrap .react-pdf__Document {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+.pdf-page-wrap .react-pdf__Page {
+  position: relative;
+  display: inline-flex;
+  align-self: start;
+  border-radius: 2px;
+  overflow: visible;
+  box-shadow:
+    var(--shadow-page),
+    0 24px 60px -24px oklch(0.25 0.04 50 / 0.35);
+}
+.pdf-page-wrap canvas {
+  max-width: none;
+  border-radius: 2px;
+}
+.pdf-page-wrap .textLayer {
+  z-index: 2;
+  cursor: text;
+  user-select: text;
+}
+/* The glyphs are only a few pixels tall. Extend the hit area into the
+   line gap so a drag can start on the word, not just on the ink. */
+.pdf-page-wrap .textLayer span::before {
+  content: "";
+  position: absolute;
+  inset: -0.55em 0;
+}
+.pdf-page-wrap .annotationLayer {
+  z-index: 3;
+  pointer-events: none;
+}
+.pdf-page-wrap .annotationLayer :is(a, button, input, textarea, select) {
+  pointer-events: auto;
+}
+.pdf-highlight {
+  position: absolute;
+  border-radius: 0.12em;
+  background: color-mix(in oklch, var(--brass) 48%, transparent);
+  box-shadow: inset 0 -1px 0 color-mix(in oklch, var(--brass) 75%, transparent);
+}
+/* Multiply the page colour over the canvas: white paper takes the theme
+   tint while black ink stays black. */
+.theme-sepia .pdf-page-wrap .react-pdf__Page::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  background: var(--page);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+.dark .pdf-page-wrap .react-pdf__Page {
+  filter: invert(0.88) hue-rotate(180deg) sepia(0.12) contrast(0.96);
+}
+/* A page that is mostly a picture keeps its own colors. Inverting it
+   turns a cover into a negative. */
+.dark .pdf-page-wrap .pdf-picture .react-pdf__Page {
+  filter: none;
+}
+
+.epub-host iframe {
+  border: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (pointer: coarse) {
+  [data-slot="button"],
+  [data-slot="input-group-button"],
+  [data-slot="input"],
+  [data-slot="tabs-trigger"],
+  [data-slot="toggle"],
+  [data-slot="toggle-group-item"] {
+    min-height: 2.5rem;
+    min-width: 2.5rem;
+  }
+}

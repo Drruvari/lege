@@ -1,0 +1,30 @@
+export {
+  addBook,
+  deleteBook,
+  deleteShelf,
+  getFile,
+  getPreferences,
+  keepLibraryStored,
+  listAllAnnotations,
+  listAnnotations,
+  listBooks,
+  listShelves,
+  saveAnnotations,
+  saveBook,
+  savePreferences,
+  saveShelf,
+} from "./data/reader-storage";
+export { LANGUAGES, translateText } from "./lib/translation";
+export {
+  DEFAULT_PREFS,
+  PLACEHOLDER_AUTHOR,
+  type Annotation,
+  type BookMeta,
+  type CapturedSelection,
+  type HighlightRect,
+  type ReaderHandle,
+  type ReaderPreferences,
+  type ReaderTheme,
+  type Shelf,
+  type TocEntry,
+} from "./model/reader-types";
