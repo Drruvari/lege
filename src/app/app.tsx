@@ -243,12 +243,13 @@ export default function App() {
     root.classList.toggle("dark", preferences.theme === "night");
     const icon = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
     if (icon) {
-      icon.href =
+      const file =
         preferences.theme === "night"
-          ? "/favicon-night.png"
+          ? "favicon-night.png"
           : preferences.theme === "sepia"
-            ? "/favicon-sepia.png"
-            : "/favicon-paper.png";
+            ? "favicon-sepia.png"
+            : "favicon-paper.png";
+      icon.href = `${import.meta.env.BASE_URL}${file}`;
     }
     return () => root.classList.remove("theme-sepia", "dark");
   }, [preferences.theme]);
